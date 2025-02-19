@@ -16,7 +16,7 @@ import { useSaveComponent } from "../api/use-save-component";
 export const ComponentPreview = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { code, values } = useComponentStore();
-  const {mutate , isPending} = useSaveComponent()
+  const { mutate, isPending } = useSaveComponent();
 
   const handleCopy = () => {
     setIsLoading(true);
@@ -32,7 +32,7 @@ export const ComponentPreview = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${values.name}.tsx`;
+    a.download = `${values.name || "Untitled"}.tsx`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -41,7 +41,7 @@ export const ComponentPreview = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-start gap-2">
-      <div className="flex items-center justify-between gap-4 w-full">
+      <div className="flex items-center justify-between gap-4 w-full flex-wrap">
         <span className="text-gray-400 text-sm">
           (if the preview does not appear just reload the page)
         </span>
@@ -54,11 +54,11 @@ export const ComponentPreview = () => {
             )}
             Copy Code
           </Button>
-          <Button variant={"secondary"} onClick={exportFile}>
+          <Button variant={"secondary"} onClick={exportFile} disabled={isPending}>
             <BsDownload className="size-7" />
             Export
           </Button>
-          <Button variant={"success"} onClick={mutate}>
+          <Button variant={"success"} onClick={mutate} disabled={isPending}>
             <FaRegSave className="size-5" />
             Save
           </Button>

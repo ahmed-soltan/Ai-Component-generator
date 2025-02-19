@@ -1,12 +1,12 @@
 import { useId } from "react";
 import { toast } from "sonner";
 import { InferResponseType } from "hono";
+import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
 
 import { useComponentStore } from "../store/store";
-import { useRouter } from "next/navigation";
 
 type ResponseType = InferResponseType<
   (typeof client.api.component)["save-component"]["$post"]
@@ -46,13 +46,14 @@ export const useSaveComponent = () => {
 
       const responseData = await response.json();
 
-      router.push("/generated-components")
-      setCode("")
-      setValues({})
-
+      
       queryClient.invalidateQueries({ queryKey: ["components"] });
       toast.success("Component saved Successfully!", { id: toastId });
-
+      
+      router.push("/dashboard/generated-components")
+      setCode("")
+      setValues({})
+      
       return responseData;
     },
   });

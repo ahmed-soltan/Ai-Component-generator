@@ -1,8 +1,16 @@
+import { redirect } from "next/navigation";
 
-const GeneratedComponentsPage = () => {
-  return (
-    <div>GeneratedComponentsPage</div>
-  )
-}
+import { getCurrent } from "@/features/auth/queries";
 
-export default GeneratedComponentsPage
+import { ComponentsContainer } from "@/features/component/components/components-container";
+
+const GeneratedComponentsPage = async () => {
+  const user = await getCurrent();
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  return <ComponentsContainer />;
+};
+
+export default GeneratedComponentsPage;

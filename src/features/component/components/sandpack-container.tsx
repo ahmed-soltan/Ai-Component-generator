@@ -82,7 +82,6 @@ export default MyComponent;
       >
         <SandpackLayout>
           <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
-            <CustomAceEditor code={code || defaultCode}/>
             {values.jsFramework === "angular" || values.jsFramework === "vanilla" ? (
               <div className="flex items-center justify-center flex-col w-full h-full">
                 <h2>
@@ -96,6 +95,7 @@ export default MyComponent;
 
               <SandpackPreview style={{ height: "82vh" }} />
             )}
+            <CustomAceEditor code={code || defaultCode}/>
           </div>
         </SandpackLayout>
       </SandpackProvider>

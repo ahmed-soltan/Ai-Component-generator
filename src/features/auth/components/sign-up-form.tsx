@@ -42,7 +42,7 @@ export const SignUpForm = () => {
     <div className="w-full max-w-[500px] bg-dots">
       <Card className="w-full h-full md:w-[487px] border-none shadow-none">
         <CardHeader className="flex items-center justify-center text-center p-7">
-          <CardTitle className="text-2xl">Welcome Back!</CardTitle>
+          <CardTitle className="text-2xl">Create Account!</CardTitle>
         </CardHeader>
         <CardContent className="p-7">
           <Form {...form}>
@@ -121,7 +121,7 @@ export const SignUpForm = () => {
             // onClick={()=>signUpWithGoogle()}
           >
             <FcGoogle className="mr-2 size-5" />
-            Sign Up With Google
+            Continue With Google
           </Button>
           <Button
             variant={"secondary"}
@@ -131,7 +131,7 @@ export const SignUpForm = () => {
             // onClick={()=>signUpWithGithub()}
           >
             <FaGithub className="mr-2 size-5" />
-            Sign Up With Github
+            Continue With Github
           </Button>
         </CardContent>
         <Separator />

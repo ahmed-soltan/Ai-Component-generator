@@ -53,8 +53,6 @@ export const CreateComponentForm = ({
   const [boxShadow, setBoxShadow] = useState("none");
   const { mutate, isPending } = useCreateComponent();
 
-  console.log(initialValues);
-
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
     defaultValues: {
@@ -65,24 +63,22 @@ export const CreateComponentForm = ({
       cssFramework: initialValues.cssFramework || "tailwind",
       radius: initialValues.radius || "none",
       shadow: initialValues.shadow || "none",
-      prompt: initialValues.prompt || "",
     },
   });
 
   useEffect(() => {
     if (initialValues) {
-      form.reset({
-        name: initialValues.name || "My Component",
-        theme: initialValues.theme || "dark",
-        layout: initialValues.layout || "ltr",
-        jsFramework: initialValues.jsFramework || "react",
-        cssFramework: initialValues.cssFramework || "tailwind",
-        radius: initialValues.radius || "none",
-        shadow: initialValues.shadow || "none",
-        prompt: initialValues.prompt || "",
-      });
+      form.setValue("name", initialValues.name);
+      form.setValue("theme", initialValues.theme);
+      form.setValue("layout", initialValues.layout);
+      form.setValue("jsFramework", initialValues.jsFramework);
+      form.setValue("cssFramework", initialValues.cssFramework);
+      form.setValue("radius", initialValues.radius);
+      form.setValue("shadow", initialValues.shadow);
+    } else {
+      form.reset();
     }
-  }, []);
+  },[initialValues , form])
 
   const onSubmit = (values: z.infer<typeof createComponentSchema>) => {
     mutate({ json: values });
@@ -100,6 +96,8 @@ export const CreateComponentForm = ({
       form.setValue("shadow", value);
     }
   };
+
+  console.log(Object.entries(themes["dark"]))
 
   return (
     <div className="flex flex-col gap-5 p-4 w-full h-full">
@@ -140,7 +138,7 @@ export const CreateComponentForm = ({
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -176,7 +174,7 @@ export const CreateComponentForm = ({
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -212,7 +210,7 @@ export const CreateComponentForm = ({
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                   >
                     <FormControl>
                       <SelectTrigger disabled={isPending} className="uppercase">
@@ -257,7 +255,7 @@ export const CreateComponentForm = ({
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger
@@ -361,14 +359,14 @@ export const CreateComponentForm = ({
                       rows={5}
                       {...field}
                       placeholder="Enter Your Component Description"
-                      className="w-full"
+                      className="w-full pb-12"
                       disabled={isPending}
                     />
                   </FormControl>
                   <FormMessage />
                   <Button
-                    size={"icon"}
-                    variant={"primary"}
+                    size="icon"
+                    variant="primary"
                     type="submit"
                     className="absolute right-2 bottom-2 w-auto px-2"
                     disabled={isPending}

@@ -39,24 +39,23 @@ export const themes = {
   },
 } 
 
-const themeKeys = ["earthy" , "minimalist" , "vibrant" , "pastel" , "dark"] as const
+export const themeKeys = ["earthy" , "minimalist" , "vibrant" , "pastel" , "dark"] as const
 
 export const createComponentSchema = z.object({
   name: z.string().min(1, {
     message: "Name should be at least 1 character long",
-  }),
+  }).default("Untitled"),
   jsFramework: z.enum(jsFrameworks).default("react"),
-  cssFramework: z.enum(cssFrameworks),
-  layout: z.enum(layouts),
-  theme: z.enum(themeKeys),  
+  cssFramework: z.enum(cssFrameworks).default("tailwind"),
+  layout: z.enum(layouts).default("ltr"),
+  theme: z.enum(themeKeys).default("dark"),  
   prompt: z.string().min(10, {
     message: "Prompt should be at least 10 characters long",
   }),
-  radius: z.enum(radius),
-  shadow: z.enum(shadow),
+  radius: z.enum(radius).default("none"),
+  shadow: z.enum(shadow).default("none"),
   currentCode: z.string().optional(),
   previousPrompt: z.string().optional(),
-  code:z.string().optional()
 });
 
 

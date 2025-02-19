@@ -1,8 +1,15 @@
+import { cssFrameworks, jsFrameworks, radius, shadow, themes } from "./schema";
 import { Models } from "node-appwrite";
 
-export type ProjectType = Models.Document & {
-  name?: string;
-  framework?: "react" | "vue" | "angular" | "vanilla";
-  description?: string | null;
-  userId?: string;
+export type ComponentType = Models.Document & {
+  name: string;
+  jsFramework: typeof jsFrameworks;
+  cssFramework: typeof cssFrameworks;
+  layout?: "rtl" | "ltr" | undefined;
+  radius: typeof radius;
+  shadow: typeof shadow;
+  prompt: string;
+  userId: string;
+  theme: keyof typeof themes;
+  code: string;
 };

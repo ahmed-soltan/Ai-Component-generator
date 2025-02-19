@@ -24,7 +24,7 @@ import { loginSchema } from "../schemas";
 import { useSignIn } from "../api/use-sign-in";
 
 export const SignInForm = () => {
-  const {mutate , isPending} = useSignIn();
+  const { mutate, isPending } = useSignIn();
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -34,7 +34,7 @@ export const SignInForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof loginSchema>) => {
-    mutate({json:values})
+    mutate({ json: values });
   };
 
   return (
@@ -57,7 +57,7 @@ export const SignInForm = () => {
                         placeholder="Enter Email Address"
                         {...field}
                         disabled={isPending}
-                        />
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -103,7 +103,7 @@ export const SignInForm = () => {
             // onClick={()=>signUpWithGoogle()}
           >
             <FcGoogle className="mr-2 size-5" />
-            Login With Google
+            Continue With Google
           </Button>
           <Button
             variant={"secondary"}
@@ -113,7 +113,7 @@ export const SignInForm = () => {
             // onClick={()=>signUpWithGithub()}
           >
             <FaGithub className="mr-2 size-5" />
-            Login With Github
+            Continue With Github
           </Button>
         </CardContent>
         <Separator />
