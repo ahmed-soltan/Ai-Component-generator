@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Navbar } from "@/components/navbar";
-import { ContainerWrapper } from "@/components/container-wrapper";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,16 +17,16 @@ export const metadata: Metadata = {
   keywords: ["AI", "UI Generator", "Tailwind", "React", "Next.js"],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <Providers>
-          <ContainerWrapper>
-            <Navbar />
-            <main>{children}</main>
-          </ContainerWrapper>
-        </Providers>
+        <Toaster richColors />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

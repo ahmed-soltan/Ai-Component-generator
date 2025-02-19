@@ -6,9 +6,12 @@ import { ArrowRight, StarsIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CodeEditor } from "@/components/code-editor";
+import { CodeEditor } from "@/features/component/components/code-editor";
+import { useCurrent } from "@/features/auth/api/use-current";
 
 export const Banner = () => {
+  const {data:user} = useCurrent();
+
   const code = `
   const InspireCard = () => {
     return (
@@ -40,24 +43,36 @@ export default InspireCard;
           styles, and generate production-ready JSX with Tailwind in seconds.
           Instantly preview, edit, and export your components—all powered by AI.{" "}
         </p>
-        <Button
-          variant={"primary"}
-          size={"lg"}
-          asChild
-          className="text-lg py-6 group"
-        >
-          <Link href={"/sign-up"}>
-            Get Started For Free{" "}
-            <ArrowRight className="ml-1 size-8 group-hover:translate-x-1 duration-150 transition-transform" />
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant={"primary"}
+            size={"lg"}
+            asChild
+            className="text-lg py-6 group"
+          >
+            <Link href={!user ? "/sign-up" : "/dashboard"}>
+              Get Started For Free{" "}
+              <ArrowRight className="ml-1 size-8 group-hover:translate-x-1 duration-150 transition-transform" />
+            </Link>
+          </Button>
+          {!user && (
+            <Button
+              variant={"secondary"}
+              size={"lg"}
+              asChild
+              className="text-lg py-6"
+            >
+              <Link href={"/sign-up"}>Sign Up </Link>
+            </Button>
+          )}
+        </div>
         <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[650px] border shadow z-20">
           <h1 className="font-bold text-xl text-gray-900">
             Generating Your UI Component...{" "}
             <Badge variant={"primary"}>Preview</Badge>
           </h1>
           <Separator />
-          <CodeEditor code={code} readOnly />
+          <CodeEditor code={code} />
         </div>
       </div>
     </div>

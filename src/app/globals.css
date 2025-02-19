@@ -13,6 +13,10 @@ body,
   background: linear-gradient(135deg, #dde7f1, #dcceff);
   position: relative;
 }
+.card-header-bg-gradient {
+  background: linear-gradient(135deg, #f4f6f7, #f1ebff);
+  position: relative;
+}
 
 .gr-bg {
   background: linear-gradient(to bottom, #4a04fa, #67a3df);
@@ -24,10 +28,11 @@ body,
       rgba(186, 159, 253, 0.2),
       transparent
     );
-  background-size: cover;
-  position: relative;
-  border-radius: 50%;
 }
+
+/* h1{
+  color: #7f54eb;
+} */
 
 .dot {
   position: absolute;
@@ -35,6 +40,7 @@ body,
   height: 2px;
   background-color: black;
   border-radius: 50%;
+  opacity: .5;
 }
 
 .bg-image {
@@ -79,6 +85,24 @@ body,
   background-size: 100px 100px;
   opacity: 0.5;
   pointer-events: none;
+}
+
+.sp-c-fVPbOs{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sp-preview{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.sp-preview-actions .sp-button {
+  display: none !important;
+}
+
+.sp-console-wrapper .sp-console .sp-console-actions .sp-icon-standalone{
+  display: block !important;
 }
 
 @layer base {
