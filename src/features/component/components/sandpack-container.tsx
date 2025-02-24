@@ -6,10 +6,10 @@ import {
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
 
-import { useComponentStore } from "@/features/component/store/store";
-
 interface SandpackContainerProps {
   code?: string;
+  values: Record<string, any>;
+  setCode: (code: string) => void;
 }
 
 const templateToMainFile: {
@@ -22,12 +22,14 @@ const templateToMainFile: {
   preact: "/src/App.js",
   lit: "/src/App.ts",
   ionic: "/src/app/app.component.ts",
-  vanilla:"index.js"
+  vanilla: "index.js",
 };
 
-export default function SandpackContainer({ code }: SandpackContainerProps) {
-  const { values } = useComponentStore();
-
+export default function SandpackContainer({
+  code,
+  values,
+  setCode
+}: SandpackContainerProps) {
   const [isClient, setIsClient] = useState(false);
   const [mainFile, setMainFile] = useState<string>("/App.js");
 
@@ -82,20 +84,18 @@ export default MyComponent;
       >
         <SandpackLayout>
           <div className="grid grid-cols-1 lg:grid-cols-2 w-full">
-            {values.jsFramework === "angular" || values.jsFramework === "vanilla" ? (
+            {values.jsFramework === "angular" ||
+            values.jsFramework === "vanilla" ? (
               <div className="flex items-center justify-center flex-col w-full h-full">
                 <h2>
                   This template does not support Angular or Vanilla JavaScript.
                 </h2>
-                <p>
-                  Please use a different template or framework.
-                </p>
+                <p>Please use a different template or framework.</p>
               </div>
-            ) :(
-
+            ) : (
               <SandpackPreview style={{ height: "82vh" }} />
             )}
-            <CustomAceEditor code={code || defaultCode}/>
+            <CustomAceEditor code={code || defaultCode} setCode={setCode}/>
           </div>
         </SandpackLayout>
       </SandpackProvider>

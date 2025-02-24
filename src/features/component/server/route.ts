@@ -4,17 +4,18 @@ import { ID, Query } from "node-appwrite";
 import { Mistral } from "@mistralai/mistralai";
 import { zValidator } from "@hono/zod-validator";
 
-import { COMPONENTS_ID, DATABASES_ID } from "@/config";
+import { COMPONENTS_ID, DATABASES_ID, PERFORMANCE_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import {
   createComponentSchema,
-  cssFrameworks,
   jsFrameworks,
+  cssFrameworks,
   saveComponentSchema,
   themeKeys,
   themes,
 } from "../schema";
+import { ComponentType } from "../types";
 
 const apiKey = process.env.MISTRAL_API_KEY;
 
@@ -23,8 +24,11 @@ const client = new Mistral({ apiKey: apiKey });
 const app = new Hono()
   .post(
     "/generate-ui",
+    sessionMiddleware,
     zValidator("json", createComponentSchema),
     async (c) => {
+      const databases = c.get("databases");
+      const user = c.get("user");
       const {
         name,
         jsFramework,
@@ -38,11 +42,14 @@ const app = new Hono()
         previousPrompt,
       } = c.req.valid("json");
 
+      if(!user){
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
       if (!prompt) {
         return c.json({ error: "Prompt is required" }, 400);
       }
 
-      // Construct the detailed prompt for AI
       const detailedPrompt = `
       Generate a ${jsFramework} UI component based on the following specifications:
       - **Component Name:** ${name}
@@ -59,6 +66,8 @@ const app = new Hono()
       - **Description:** ${prompt}
       - **previous prompt:** ${previousPrompt}
       - **current code:** ${currentCode}
+
+      when you are applying a hex color using this syntax bg-[#FFFFFF] or text-[#FFFFFF] with the props hex color 
 
       don't use props make everything internal only add props if the user asked for this
 
@@ -104,18 +113,45 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           return c.json({ error: "Missing Gemini API key" }, 500);
         }
 
+        const startTime = Date.now();
+
         const chatResponse = await client.chat.complete({
           model: "mistral-large-latest",
           messages: [{ role: "user", content: detailedPrompt }],
         });
+
+        const endTime = Date.now();
+
+        const responseTime = endTime - startTime;
 
         if (
           !chatResponse?.choices ||
           !chatResponse?.choices[0]?.message.content ||
           chatResponse?.choices[0]?.message.content.length === 0
         ) {
+          await databases.createDocument(
+            DATABASES_ID,
+            PERFORMANCE_ID,
+            ID.unique(),
+            {
+              userId: user.$id,
+              responseTime,
+              status:"failed"
+            }
+          )
           return c.json({ error: "Failed to generate component" }, 500);
         }
+
+        await databases.createDocument(
+          DATABASES_ID,
+          PERFORMANCE_ID,
+          ID.unique(),
+          {
+            userId: user.$id,
+            responseTime,
+            status:"success"
+          }
+        )
 
         return c.json({ component: chatResponse.choices[0].message.content });
       } catch (error) {
@@ -184,15 +220,13 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
     async (c) => {
       const databases = c.get("databases");
       const user = c.get("user");
-      const { jsFramework, cssFramework, theme , search} = c.req.valid("query");
+      const { jsFramework, cssFramework, theme, search } = c.req.valid("query");
 
       if (!user) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const query = [
-        Query.equal("userId", user.$id),
-      ];
+      const query = [Query.equal("userId", user.$id)];
 
       if (jsFramework) {
         query.push(Query.equal("jsFramework", jsFramework));
@@ -202,8 +236,8 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         query.push(Query.equal("cssFramework", cssFramework));
       }
 
-      if(theme){
-        query.push(Query.equal("theme", theme))
+      if (theme) {
+        query.push(Query.equal("theme", theme));
       }
 
       if (search) {
@@ -228,14 +262,59 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const project = await databases.getDocument(
+    const component = await databases.getDocument<ComponentType>(
       DATABASES_ID,
       COMPONENTS_ID,
       componentId
     );
 
-    return c.json({ data: project });
+    return c.json({ data: component });
   })
+  .patch(
+    "/update-component/:componentId",
+    sessionMiddleware,
+    zValidator("json", saveComponentSchema),
+    async (c) => {
+      const user = c.get("user");
+      const databases = c.get("databases");
+      const { componentId } = c.req.param();
+
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const {
+        name,
+        jsFramework,
+        cssFramework,
+        layout,
+        theme,
+        prompt,
+        radius,
+        shadow,
+        code,
+      } = c.req.valid("json");
+
+      const savedComponent = await databases.updateDocument(
+        DATABASES_ID,
+        COMPONENTS_ID,
+        componentId,
+        {
+          name,
+          jsFramework,
+          cssFramework,
+          layout,
+          theme,
+          aiPrompt: prompt,
+          radius,
+          shadow,
+          code,
+        }
+      );
+
+      return c.json({ data: savedComponent });
+    }
+  )
   .delete("/:componentId", sessionMiddleware, async (c) => {
     const databases = c.get("databases");
     const user = c.get("user");

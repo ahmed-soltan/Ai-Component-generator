@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --chart-1: 12 80% 55%; /* More contrast, slightly darker */
+    --chart-2: 175 60% 40%; /* Adjusted for visibility */
+    --chart-3: 200 45% 30%; /* Softer blue */
+    --chart-4: 42 85% 58%;  /* Warmer orange */
+    --chart-5: 28 90% 60%;  /* Vibrant amber */
+  }
+
+  .dark {
+    --chart-1: 220 75% 55%; /* Brighter for visibility */
+    --chart-2: 160 65% 50%; /* Stronger green */
+    --chart-3: 32 85% 60%;  /* Adjusted warmth */
+    --chart-4: 285 70% 65%; /* Improved purple */
+    --chart-5: 345 80% 60%; /* Slightly less bright */
+  }
+}
+
 :root,
 html,
 body,

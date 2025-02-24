@@ -50,7 +50,7 @@ export default InspireCard;
             asChild
             className="text-lg py-6 group"
           >
-            <Link href={!user ? "/sign-up" : "/dashboard"}>
+            <Link href={!user ? "/sign-up" : "/dashboard/generate-component"}>
               Get Started For Free{" "}
               <ArrowRight className="ml-1 size-8 group-hover:translate-x-1 duration-150 transition-transform" />
             </Link>

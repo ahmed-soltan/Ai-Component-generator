@@ -5,6 +5,8 @@ import { PencilIcon, Trash2 } from "lucide-react";
 import { IoExtensionPuzzleOutline, IoLogoJavascript } from "react-icons/io5";
 import { MdOutlineDarkMode } from "react-icons/md";
 
+import { formatDistance } from "date-fns";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -38,10 +40,17 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
         callbackFn={handleDelete}
         variant={"destructive"}
       />
-      <h1 className="text-2xl text-neutral-50 font-semibold">
-        <span className="text-neutral-400">#{component.$id}</span> -{" "}
-        {component.name}
-      </h1>
+      <div className="w-full max-w-[98%] flex items-center justify-between gap-2 flex-wrap">
+        <h1 className="text-2xl text-neutral-50 font-semibold">
+          <span className="text-neutral-400">#{component.$id}</span> -{" "}
+          {component.name}
+        </h1>
+        <span className="text-sm text-neutral-400">
+          updated {formatDistance(new Date(component.$updatedAt), new Date(), {
+            addSuffix: true,
+          })}
+        </span>
+      </div>
       <div className="flex items-center gap-4 capitalize">
         <Badge className="rounded-md w-auto text-sm" variant={"secondary"}>
           <IoLogoJavascript className="size-4 mr-1" />
@@ -63,6 +72,7 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
           size={"lg"}
           asChild
           className="w-full sm:w-auto md:w-full lg:w-auto"
+          disabled={isPending}
         >
           <Link href={`/dashboard/generated-components/${component.$id}`}>
             <PencilIcon className="size-5 mr-2" />
@@ -74,6 +84,7 @@ export const ComponentCard = ({ component }: ComponentCardProps) => {
           size={"lg"}
           className="w-full sm:w-auto md:w-full lg:w-auto"
           onClick={() => setOpen(true)}
+          disabled={isPending}
         >
           <Trash2 className="size-5 mr-2" />
           Delete Component

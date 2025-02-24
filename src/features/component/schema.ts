@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const jsFrameworks = ["react", "vue" , "angular" , "vanilla"] as const;
 export const cssFrameworks = ["tailwind", "bootstrap", "css"] as const;
-export const layouts = ["rtl", "ltr"] as const;
+export const layouts = ["flex", "grid"] as const;
 export const radius = ["none", "sm", "md", "lg", "xl", "2xl", "full"] as const;
 export const shadow = ["none", "sm", "md", "lg", "xl", "2xl", "full"] as const;
 
@@ -47,7 +47,7 @@ export const createComponentSchema = z.object({
   }).default("Untitled"),
   jsFramework: z.enum(jsFrameworks).default("react"),
   cssFramework: z.enum(cssFrameworks).default("tailwind"),
-  layout: z.enum(layouts).default("ltr"),
+  layout: z.enum(layouts).default("flex"),
   theme: z.enum(themeKeys).default("dark"),  
   prompt: z.string().min(10, {
     message: "Prompt should be at least 10 characters long",

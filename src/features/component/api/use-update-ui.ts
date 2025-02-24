@@ -1,18 +1,19 @@
-import { InferResponseType, InferRequestType } from "hono";
 import { useId } from "react";
 import { toast } from "sonner";
+import { InferResponseType } from "hono";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { client } from "@/lib/rpc";
-import { useComponentStore } from "../store/store";
+
+import { useCurrentComponent } from "../store/store";
 
 type ResponseType = InferResponseType<(typeof client.api.component)["generate-ui"]["$post"]>;
-type RequestType = InferRequestType<(typeof client.api.component)["generate-ui"]["$post"]>;
 
-export const useCreateComponent = () => {
+export const useUpdateUI= () => {
   const queryClient = useQueryClient();
   const toastId = useId();
   
-  const { setCode , setValues , values , code } = useComponentStore();
+  const { setCode , setValues , values , code } = useCurrentComponent();
 
   const mutation = useMutation<ResponseType, Error, any>({
     mutationFn: async ({json}) => {

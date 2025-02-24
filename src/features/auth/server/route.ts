@@ -1,5 +1,6 @@
+import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
+import { ID } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { deleteCookie, setCookie } from "hono/cookie";
 
@@ -7,8 +8,8 @@ import { createAdminClient } from "@/lib/appwrite";
 import { loginSchema, registerSchema } from "../schemas";
 
 import { AUTH_COOKIE } from "../constants";
-import { DATABASES_ID, PROFILES_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
+import { DATABASES_ID, PREFERENCES_ID, PROFILES_ID } from "@/config";
 
 const app = new Hono()
   .post("/sign-in", zValidator("json", loginSchema), async (c) => {
@@ -49,6 +50,15 @@ const app = new Hono()
       userId: user.$id,
     });
 
+    await databases.createDocument(
+      DATABASES_ID,
+      PREFERENCES_ID,
+      user.$id,
+      {
+        userId: user.$id,
+      }
+    )
+
     return c.json({ success: true });
   })
   .post("/sign-out", sessionMiddleware, async (c) => {
@@ -71,8 +81,39 @@ const app = new Hono()
       PROFILES_ID,
       userId
     );
-    
-    return c.json({ data: { ...user, profile } });
-  });
+
+    const preferences = await databases.getDocument(
+      DATABASES_ID,
+      PREFERENCES_ID,
+      userId
+    )
+
+    return c.json({ data: { ...user, profile , preferences } });
+  })
+  .patch(
+    "/profile",
+    sessionMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        name: z.string(),
+      })
+    ),
+    async (c) => {
+      const user = c.get("user");
+      const databases = c.get("databases");
+      const { name } = c.req.valid("json");
+
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      await databases.updateDocument(DATABASES_ID, PROFILES_ID, user.$id, {
+        name,
+      });
+
+      return c.json({ data: "success" });
+    }
+  );
 
 export default app;

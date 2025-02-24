@@ -40,45 +40,31 @@ import {
 
 import { cn } from "@/lib/utils";
 
-import { useCreateComponent } from "../api/use-create-component";
+import { useGenerateUI } from "../api/use-generate-ui";
 
 interface CreateComponentFormProps {
-  initialValues?: any;
+  initialValues: any;
 }
 
 export const CreateComponentForm = ({
   initialValues,
 }: CreateComponentFormProps) => {
-  const [borderRadius, setBorderRadius] = useState("none");
-  const [boxShadow, setBoxShadow] = useState("none");
-  const { mutate, isPending } = useCreateComponent();
+  const [borderRadius, setBorderRadius] = useState(initialValues.radius);
+  const [boxShadow, setBoxShadow] = useState(initialValues.shadow);
+  const { mutate, isPending } = useGenerateUI();
 
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
     defaultValues: {
-      name: initialValues.name || "My Component",
-      theme: initialValues.theme || "dark",
-      layout: initialValues.layout || "ltr",
-      jsFramework: initialValues.jsFramework || "react",
-      cssFramework: initialValues.cssFramework || "tailwind",
-      radius: initialValues.radius || "none",
-      shadow: initialValues.shadow || "none",
+      name: initialValues.name || "Untitled",
+      theme: initialValues.theme,
+      layout: initialValues.layout,
+      jsFramework: initialValues.jsFramework ,
+      cssFramework: initialValues.cssFramework ,
+      radius: initialValues.radius,
+      shadow: initialValues.shadow,
     },
   });
-
-  useEffect(() => {
-    if (initialValues) {
-      form.setValue("name", initialValues.name);
-      form.setValue("theme", initialValues.theme);
-      form.setValue("layout", initialValues.layout);
-      form.setValue("jsFramework", initialValues.jsFramework);
-      form.setValue("cssFramework", initialValues.cssFramework);
-      form.setValue("radius", initialValues.radius);
-      form.setValue("shadow", initialValues.shadow);
-    } else {
-      form.reset();
-    }
-  },[initialValues , form])
 
   const onSubmit = (values: z.infer<typeof createComponentSchema>) => {
     mutate({ json: values });
@@ -96,8 +82,6 @@ export const CreateComponentForm = ({
       form.setValue("shadow", value);
     }
   };
-
-  console.log(Object.entries(themes["dark"]))
 
   return (
     <div className="flex flex-col gap-5 p-4 w-full h-full">
@@ -139,6 +123,7 @@ export const CreateComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
+                    defaultValue={initialValues.jsFramework}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -175,6 +160,7 @@ export const CreateComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
+                    defaultValue={initialValues.cssFramework}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -211,9 +197,10 @@ export const CreateComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
+                    defaultValue={initialValues.layout}
                   >
                     <FormControl>
-                      <SelectTrigger disabled={isPending} className="uppercase">
+                      <SelectTrigger disabled={isPending} className="capitalize">
                         <SelectValue placeholder="Select a Layout" />
                       </SelectTrigger>
                     </FormControl>
@@ -256,6 +243,7 @@ export const CreateComponentForm = ({
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
+                        defaultValue={initialValues.theme}
                       >
                         <FormControl>
                           <SelectTrigger
@@ -339,7 +327,7 @@ export const CreateComponentForm = ({
             <p className="dark:text-white font-medium">
               <GrCircleInformation className="size-5 inline mr-1 mb-1" />
               Note:{" "}
-              <span className="text-gray-400 font-normal">
+              <span className="text-gray-400 font-normal text-sm">
                 Please provide a detailed and clear prompt to help the AI
                 understand the task you want it to perform. A well-written
                 prompt can greatly enhance the accuracy and quality of the

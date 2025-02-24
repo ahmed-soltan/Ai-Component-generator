@@ -5,7 +5,7 @@ export type ComponentType = Models.Document & {
   name: string;
   jsFramework: typeof jsFrameworks;
   cssFramework: typeof cssFrameworks;
-  layout?: "rtl" | "ltr" | undefined;
+  layout?: "flex" | "grid" | undefined;
   radius: typeof radius;
   shadow: typeof shadow;
   prompt: string;

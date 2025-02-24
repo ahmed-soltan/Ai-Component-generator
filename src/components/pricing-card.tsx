@@ -36,7 +36,7 @@ export const PricingCard = ({
     if (!user) {
       router.push("/sign-in");
     } else if (user?.profile.plan === name) {
-      router.push("/dashboard");
+      router.push("/dashboard/generate-component");
     } else {
       router.push(`/checkout?plan=${name}`);
     }

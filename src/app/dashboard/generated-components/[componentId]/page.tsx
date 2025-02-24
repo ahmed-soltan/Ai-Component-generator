@@ -1,15 +1,16 @@
-import { getCurrent } from '@/features/auth/queries'
-import { redirect } from 'next/navigation';
-import React from 'react'
+import { redirect } from "next/navigation";
 
-const ComponentIdPage = async() => {
+import { getCurrent } from "@/features/auth/queries";
+
+import { GeneratedComponentContainer } from "@/features/component/components/generated-component-container";
+
+const ComponentIdPage = async () => {
   const user = await getCurrent();
-  if(!user){
-    redirect('/sign-in')
+  if (!user) {
+    redirect("/sign-in");
   }
-  return (
-    <div>ComponentIdPage</div>
-  )
-}
+  
+  return <GeneratedComponentContainer />;
+};
 
-export default ComponentIdPage
+export default ComponentIdPage;

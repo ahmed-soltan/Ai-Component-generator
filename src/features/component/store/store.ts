@@ -17,7 +17,22 @@ export const useComponentStore = create<ComponentState>()(
       setValues: (values) => set({ values }),
     }),
     {
-      name: "component-storage", 
+      name: "component-storage",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
+
+export const useCurrentComponent = create<ComponentState>()(
+  persist(
+    (set) => ({
+      code: "",
+      values: {},
+      setCode: (code) => set({ code }),
+      setValues: (values) => set({ values }),
+    }),
+    {
+      name: "current-component",
       storage: createJSONStorage(() => sessionStorage),
     }
   )

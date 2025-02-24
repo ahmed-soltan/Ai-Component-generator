@@ -27,7 +27,7 @@ export const useSaveComponent = () => {
         name: values.name || "My Component",
         jsFramework: values.jsFramework || "react",
         cssFramework: values.cssFramework || "tailwind",
-        layout: values.layout || "ltr",
+        layout: values.layout || "flex",
         theme: values.theme || "minimalist",
         prompt: values.prompt || "",
         radius: values.radius || "none",

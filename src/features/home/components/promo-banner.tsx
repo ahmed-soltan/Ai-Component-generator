@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Stars } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
 import { useCurrent } from "@/features/auth/api/use-current";
 
 export const PromoBanner = () => {
@@ -22,7 +23,7 @@ export const PromoBanner = () => {
         size={"lg"}
         className="w-full max-w-[200px] text-lg"
       >
-        <Link href={!user ? "/sign-up" : "/dashboard"}>Get Started</Link>
+        <Link href={!user ? "/sign-up" : "/dashboard/generate-component"}>Get Started</Link>
       </Button>
     </div>
   );

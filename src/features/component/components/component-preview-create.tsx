@@ -13,10 +13,11 @@ import SandpackContainer from "@/features/component/components/sandpack-containe
 import { useComponentStore } from "../store/store";
 import { useSaveComponent } from "../api/use-save-component";
 
-export const ComponentPreview = () => {
+export const ComponentPreviewCreate = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { code, values } = useComponentStore();
   const { mutate, isPending } = useSaveComponent();
+
+  const {values , code , setCode} = useComponentStore()
 
   const handleCopy = () => {
     setIsLoading(true);
@@ -64,7 +65,7 @@ export const ComponentPreview = () => {
           </Button>
         </div>
       </div>
-      <SandpackContainer code={code} />
+      <SandpackContainer code={code} values={values} setCode={setCode}/>
     </div>
   );
 };

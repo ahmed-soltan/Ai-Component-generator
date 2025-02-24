@@ -29,7 +29,7 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/dashboard/analytics",
+      url: "/dashboard",
       icon: MdSpaceDashboard,
     },
     {
@@ -63,11 +63,6 @@ const data = {
       title: "Support / Help Center",
       url: "/dashboard/support-center",
       icon: MdHelpOutline,
-    },
-    {
-      title: "Documentation",
-      url: "/dashboard/documentation",
-      icon: BookOpen,
     },
     {
       title: "Settings",

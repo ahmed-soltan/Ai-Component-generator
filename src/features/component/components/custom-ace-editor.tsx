@@ -1,20 +1,18 @@
 import AceEditor from "react-ace";
 import { useActiveCode } from "@codesandbox/sandpack-react";
 
-import { useComponentStore } from "@/features/component/store/store";
-
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-textmate";
 
 import "ace-builds/src-noconflict/theme-monokai";
 
 interface CustomAceEditorProps{
-  code:string
+  code:string;
+  setCode: (code: string) => void;
 }
 
-export const CustomAceEditor = ({code}:CustomAceEditorProps) => {
+export const CustomAceEditor = ({code , setCode}:CustomAceEditorProps) => {
   const { updateCode } = useActiveCode();
-  const { setCode } = useComponentStore();
 
   return (
     <AceEditor

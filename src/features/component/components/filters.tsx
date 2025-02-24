@@ -16,9 +16,9 @@ import { useDebounce } from "../hooks/use-debounce";
 import { cssFrameworks, jsFrameworks, themeKeys } from "../schema";
 
 export const Filters = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [{ jsFramework, cssFramework, theme, search }, setFilters] =
-    useFilters();
+  useFilters();
+  const [searchTerm, setSearchTerm] = useState(search);
   const debouncedValue = useDebounce(searchTerm || "", 500);
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export const Filters = () => {
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-};
+  };
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-5 w-full">
