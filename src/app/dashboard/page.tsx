@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries";
-import { ContainerWrapper } from "@/components/container-wrapper";
+
 import { Separator } from "@/components/ui/separator";
-import { GenerationRadialChart } from "@/features/generation-analytics/components/generation-radial-chart";
-import { GenerationBarChart } from "@/features/generation-analytics/components/performance-bar-chart";
-import { PerformanceRadialChart } from "@/features/performance/components/performance-radial-chart";
-import { PerformanceLineChart } from "@/features/performance/components/performance-line-chart";
+import { ContainerWrapper } from "@/components/container-wrapper";
+import { PremiumCard } from "@/features/component/components/premium-card";
 import { PerformanceBarChart } from "@/features/performance/components/performance-bar-chart";
+import { PerformanceLineChart } from "@/features/performance/components/performance-line-chart";
+import { PerformanceRadialChart } from "@/features/performance/components/performance-radial-chart";
+import { GenerationBarChart } from "@/features/generation-analytics/components/performance-bar-chart";
+import { GenerationRadialChart } from "@/features/generation-analytics/components/generation-radial-chart";
 
 const DashboardPage = async () => {
   const user = await getCurrent();
@@ -23,11 +25,20 @@ const DashboardPage = async () => {
           <GenerationBarChart />
           <div className="grid grid-cols-1">
             <GenerationRadialChart />
-            <PerformanceRadialChart />
+            <div className="relative h-full w-full">
+              {user.profile.plan === "free" && <PremiumCard />}
+              <PerformanceRadialChart />
+            </div>
           </div>
         </div>
-        <PerformanceLineChart />
-        <PerformanceBarChart/>
+        <div className="relative h-full w-full">
+          {user.profile.plan === "free" && <PremiumCard />}
+          <PerformanceLineChart />
+        </div>
+        <div className="relative h-full w-full">
+          {user.profile.plan === "free" && <PremiumCard />}
+          <PerformanceBarChart />
+        </div>
       </div>
     </ContainerWrapper>
   );

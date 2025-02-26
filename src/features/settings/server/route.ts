@@ -2,8 +2,8 @@ import { z } from "zod";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 
-import { DATABASES_ID, PREFERENCES_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
+import { DATABASES_ID, PREFERENCES_ID, PROFILES_ID } from "@/config";
 
 const app = new Hono().patch(
   "/update-preferences",
@@ -28,14 +28,25 @@ const app = new Hono().patch(
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.updateDocument(
+    const userId = user.$id;
+
+    const profile = await databases.getDocument(
       DATABASES_ID,
-      PREFERENCES_ID,
-      user.$id,
-      {
-        ...preferences,
-      }
+      PROFILES_ID,
+      userId
     );
+
+    const isFreePlan = profile.plan === "free";
+    const isRestrictedFramework = preferences.default_jsFramework !== "react";
+    const isRestrictedTheme = preferences.default_theme !== "earthy";
+
+    if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
+      return c.json({ error: "Your plan does not support this feature" }, 403);
+    }
+
+    await databases.updateDocument(DATABASES_ID, PREFERENCES_ID, user.$id, {
+      ...preferences,
+    });
 
     return c.json({ message: "Preferences updated successfully" });
   }

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 
+import { Button } from "@/components/ui/button";
+import { PremiumText } from "@/components/premium-text";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -31,17 +33,18 @@ import {
   shadow,
   themes,
 } from "@/features/component/schema";
-import { Button } from "@/components/ui/button";
 
 import { useUpdatePreferences } from "../api/use-update-preferences";
 
 import { cn } from "@/lib/utils";
+import { useCancelSubscription } from "@/features/subscription/api/use-cancel-subscription";
 
 export const PreferencesSettings = () => {
   const { data: user, isLoading } = useCurrent();
   const [borderRadius, setBorderRadius] = useState("none");
   const [boxShadow, setBoxShadow] = useState("none");
   const { mutate, isPending } = useUpdatePreferences();
+  const {mutate:cancelSubscription} = useCancelSubscription()
 
   const form = useForm({
     defaultValues: {
@@ -123,12 +126,15 @@ export const PreferencesSettings = () => {
                     defaultValue={user.preferences.default_jsFramework}
                   >
                     <FormControl>
-                      <SelectTrigger
-                        className="w-full lg:max-w-[60%] capitalize"
-                        disabled={isPending}
-                      >
-                        <SelectValue placeholder="Select a JS Framework" />
-                      </SelectTrigger>
+                      <div className="w-full lg:max-w-[60%] space-y-3">
+                        <SelectTrigger
+                          className="w-full capitalize"
+                          disabled={isPending || user?.profile.plan === "free"}
+                        >
+                          <SelectValue placeholder="Select a JS Framework" />
+                        </SelectTrigger>
+                        {user?.profile.plan === "free" && <PremiumText />}
+                      </div>
                     </FormControl>
                     <SelectContent>
                       {jsFrameworks.map((framework) => (
@@ -226,8 +232,8 @@ export const PreferencesSettings = () => {
               name="default_theme"
               control={form.control}
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between flex-wrap lg:flex-nowrap gap-2">
-                  <FormLabel className="dark:text-gray-300 font-normal">
+                <FormItem className="flex items-start justify-between flex-wrap lg:flex-nowrap gap-2">
+                  <FormLabel className="dark:text-gray-300 font-normal mt-4">
                     default theme
                   </FormLabel>
                   <div className="flex flex-col items-end gap-4 w-full lg:max-w-[60%]">
@@ -237,9 +243,19 @@ export const PreferencesSettings = () => {
                       defaultValue={user.preferences.default_theme}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full capitalize">
-                          <SelectValue placeholder="select a theme" />
-                        </SelectTrigger>
+                        <div className="w-full space-y-3">
+                          <SelectTrigger
+                            className="w-full capitalize"
+                            disabled={
+                              isPending || user?.profile.plan === "free"
+                            }
+                          >
+                            <SelectValue placeholder="select a theme" />
+                          </SelectTrigger>
+                          {user?.profile.plan === "free" && (
+                            <PremiumText />
+                          )}{" "}
+                        </div>
                       </FormControl>
 
                       <SelectContent>
@@ -322,13 +338,14 @@ export const PreferencesSettings = () => {
                 variant={"default"}
                 size={"lg"}
                 className="ml-auto mt-5 font-semibold"
-                disabled={isPending}
+                disabled={isPending || !form.formState.isDirty}
               >
                 update
               </Button>
             </div>
           </form>
         </Form>
+        <Button onClick={()=>cancelSubscription()}>Cancel Subscription</Button>
       </CardContent>
     </Card>
   );

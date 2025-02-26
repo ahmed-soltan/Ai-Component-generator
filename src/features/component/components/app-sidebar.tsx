@@ -3,6 +3,7 @@
 import * as React from "react";
 import {
   BookOpen,
+  CreditCard,
   Settings2,
 } from "lucide-react";
 import { FaUsers } from "react-icons/fa";
@@ -68,6 +69,11 @@ const data = {
       title: "Settings",
       url: "/dashboard/settings",
       icon: Settings2,
+    },
+    {
+      title: "Subscriptions",
+      url: "/dashboard/subscription",
+      icon: CreditCard,
     },
   ],
 };

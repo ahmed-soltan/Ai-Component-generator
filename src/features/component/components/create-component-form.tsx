@@ -41,6 +41,8 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useGenerateUI } from "../api/use-generate-ui";
+import { useCurrent } from "@/features/auth/api/use-current";
+import { PremiumText } from "@/components/premium-text";
 
 interface CreateComponentFormProps {
   initialValues: any;
@@ -52,6 +54,7 @@ export const CreateComponentForm = ({
   const [borderRadius, setBorderRadius] = useState(initialValues.radius);
   const [boxShadow, setBoxShadow] = useState(initialValues.shadow);
   const { mutate, isPending } = useGenerateUI();
+  const { data: user } = useCurrent();
 
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
@@ -59,8 +62,8 @@ export const CreateComponentForm = ({
       name: initialValues.name || "Untitled",
       theme: initialValues.theme,
       layout: initialValues.layout,
-      jsFramework: initialValues.jsFramework ,
-      cssFramework: initialValues.cssFramework ,
+      jsFramework: initialValues.jsFramework,
+      cssFramework: initialValues.cssFramework,
       radius: initialValues.radius,
       shadow: initialValues.shadow,
     },
@@ -126,12 +129,15 @@ export const CreateComponentForm = ({
                     defaultValue={initialValues.jsFramework}
                   >
                     <FormControl>
-                      <SelectTrigger
-                        disabled={isPending}
-                        className="capitalize"
-                      >
-                        <SelectValue placeholder="Select a js Framework" />
-                      </SelectTrigger>
+                      <div className="w-full space-y-3">
+                        <SelectTrigger
+                          className="w-full capitalize"
+                          disabled={isPending || user?.profile.plan === "free"}
+                        >
+                          <SelectValue placeholder="Select a JS Framework" />
+                        </SelectTrigger>
+                        {user?.profile.plan === "free" && <PremiumText />}
+                      </div>
                     </FormControl>
                     <SelectContent>
                       {jsFrameworks.map((framework) => (
@@ -200,7 +206,10 @@ export const CreateComponentForm = ({
                     defaultValue={initialValues.layout}
                   >
                     <FormControl>
-                      <SelectTrigger disabled={isPending} className="capitalize">
+                      <SelectTrigger
+                        disabled={isPending}
+                        className="capitalize"
+                      >
                         <SelectValue placeholder="Select a Layout" />
                       </SelectTrigger>
                     </FormControl>
@@ -246,12 +255,19 @@ export const CreateComponentForm = ({
                         defaultValue={initialValues.theme}
                       >
                         <FormControl>
-                          <SelectTrigger
-                            disabled={isPending}
-                            className="capitalize mb-5"
-                          >
-                            <SelectValue placeholder="Select a Theme" />
-                          </SelectTrigger>
+                          <div className="w-full space-y-3">
+                            <SelectTrigger
+                              className="w-full capitalize"
+                              disabled={
+                                isPending || user?.profile.plan === "free"
+                              }
+                            >
+                              <SelectValue placeholder="select a theme" />
+                            </SelectTrigger>
+                            {user?.profile.plan === "free" && (
+                              <PremiumText />
+                            )}{" "}
+                          </div>
                         </FormControl>
                         <SelectContent>
                           {Object.keys(themes).map((key) => (

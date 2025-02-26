@@ -30,8 +30,9 @@ export const useGenerateUI = () => {
       setValues(json)
 
       if (!response.ok) {
-        toast.error("Failed to create Component", { id: toastId });
-        throw new Error("Failed to create Component");
+        const errorData: { error: string } | any = await response.json();
+        toast.error(errorData.error, { id: toastId });
+        throw new Error(errorData.error || "Failed to save Component");
       }
 
       const responseData = await response.json();

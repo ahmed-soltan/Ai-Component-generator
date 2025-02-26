@@ -2,15 +2,17 @@
 
 import Link from "next/link";
 import { ArrowRight, StarsIcon } from "lucide-react";
+import bannerImage from "../../../../public/Screenshot (343).png";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CodeEditor } from "@/features/component/components/code-editor";
 import { useCurrent } from "@/features/auth/api/use-current";
+import Image from "next/image";
 
 export const Banner = () => {
-  const {data:user} = useCurrent();
+  const { data: user } = useCurrent();
 
   const code = `
   const InspireCard = () => {
@@ -41,7 +43,8 @@ export default InspireCard;
         <p className="text-md md:text-xl font-semibold max-w-[900px] text-center text-gray-700 z-10">
           Build and customize UI components effortlessly! Enter a prompt, tweak
           styles, and generate production-ready JSX with Tailwind in seconds.
-          Instantly preview, edit, and export your components—all powered by AI.{" "}
+          Instantly preview, edit, and export your components—all powered by
+          AI.{" "}
         </p>
         <div className="flex items-center gap-3">
           <Button
@@ -66,13 +69,8 @@ export default InspireCard;
             </Button>
           )}
         </div>
-        <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[650px] border shadow z-20">
-          <h1 className="font-bold text-xl text-gray-900">
-            Generating Your UI Component...{" "}
-            <Badge variant={"primary"}>Preview</Badge>
-          </h1>
-          <Separator />
-          <CodeEditor code={code} />
+        <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[650px] border shadow z-20 h-[300px]">
+          <Image src={bannerImage} alt="Code Generation" fill className="rounded-md"/>
         </div>
       </div>
     </div>

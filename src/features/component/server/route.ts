@@ -4,7 +4,12 @@ import { ID, Query } from "node-appwrite";
 import { Mistral } from "@mistralai/mistralai";
 import { zValidator } from "@hono/zod-validator";
 
-import { COMPONENTS_ID, DATABASES_ID, PERFORMANCE_ID } from "@/config";
+import {
+  COMPONENTS_ID,
+  DATABASES_ID,
+  PERFORMANCE_ID,
+  PROFILES_ID,
+} from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import {
@@ -42,12 +47,51 @@ const app = new Hono()
         previousPrompt,
       } = c.req.valid("json");
 
-      if(!user){
+      if (!user) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
       if (!prompt) {
         return c.json({ error: "Prompt is required" }, 400);
+      }
+
+      const userId = user.$id;
+
+      const profile = await databases.getDocument(
+        DATABASES_ID,
+        PROFILES_ID,
+        userId
+      );
+
+      const isFreePlan = profile.plan === "free";
+      const isProPlan = profile.plan === "pro";
+
+      const freePlanRequestsLimit = 500;
+      const proPlanRequestsLimit = 1000;
+
+      const isRestrictedFramework = jsFramework !== "react";
+      const isRestrictedTheme = theme !== "earthy";
+
+      
+      if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
+        return c.json(
+          { error: "Your plan does not support this feature" },
+          403
+        );
+      }
+
+      const requests = await databases.listDocuments(
+        DATABASES_ID,
+        PERFORMANCE_ID,
+        [Query.equal("userId", userId)]
+      );
+
+      if(requests.total >= freePlanRequestsLimit && isFreePlan){
+        return c.json({ error: "You have reached your free plan requests limit" }, 403);
+      }
+
+      if(requests.total >= proPlanRequestsLimit && isProPlan){
+        return c.json({ error: "You have reached your pro plan requests limit" }, 403);
       }
 
       const detailedPrompt = `
@@ -136,9 +180,9 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
             {
               userId: user.$id,
               responseTime,
-              status:"failed"
+              status: "failed",
             }
-          )
+          );
           return c.json({ error: "Failed to generate component" }, 500);
         }
 
@@ -149,9 +193,9 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           {
             userId: user.$id,
             responseTime,
-            status:"success"
+            status: "success",
           }
-        )
+        );
 
         return c.json({ component: chatResponse.choices[0].message.content });
       } catch (error) {
@@ -170,6 +214,33 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
 
       if (!user) {
         return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const profile = await databases.getDocument(
+        DATABASES_ID,
+        PROFILES_ID,
+        user.$id
+      );
+
+      const isFreePlan = profile.plan === "free";
+      const isProPlan = profile.plan === "pro";
+
+      const components = await databases.listDocuments(
+        DATABASES_ID,
+        COMPONENTS_ID,
+        [Query.equal("userId", user.$id)]
+      );
+
+      if (isFreePlan && components.total >= 10) {
+        return c.json(
+          { error: "Your free plan allows for a maximum of 5 components" },
+          403
+        );
+      } else if (!isProPlan && components.total >= 50) {
+        return c.json(
+          { error: "Your pro plan allows for a maximum of 10 components" },
+          403
+        );
       }
 
       const {

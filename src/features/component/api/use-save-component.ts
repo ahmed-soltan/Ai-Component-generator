@@ -14,10 +14,10 @@ type ResponseType = InferResponseType<
 
 export const useSaveComponent = () => {
   const toastId = useId();
-  const router = useRouter()
+  const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { values, code , setCode , setValues } = useComponentStore();
+  const { values, code, setCode, setValues } = useComponentStore();
 
   const mutation = useMutation<ResponseType, Error, any>({
     mutationFn: async () => {
@@ -36,25 +36,28 @@ export const useSaveComponent = () => {
       };
 
       const response = await client.api.component["save-component"]["$post"]({
-        json: requestBody, 
+        json: requestBody,
       });
 
       if (!response.ok) {
-        toast.error("Failed to save Component", { id: toastId });
-        throw new Error("Failed to save Component");
+        const errorData: { error: string } | any = await response.json();
+        toast.error(errorData.error, { id: toastId });
+        throw new Error(errorData.error || "Failed to save Component");
       }
 
       const responseData = await response.json();
 
-      
       queryClient.invalidateQueries({ queryKey: ["components"] });
       toast.success("Component saved Successfully!", { id: toastId });
-      
-      router.push("/dashboard/generated-components")
-      setCode("")
-      setValues({})
-      
+
+      router.push("/dashboard/generated-components");
+      setCode("");
+      setValues({});
+
       return responseData;
+    },
+    onError: (error) => {
+      console.log(error);
     },
   });
 

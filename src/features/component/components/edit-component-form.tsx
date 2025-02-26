@@ -42,7 +42,8 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useUpdateUI } from "../api/use-update-ui";
-
+import { useCurrent } from "@/features/auth/api/use-current";
+import { PremiumText } from "@/components/premium-text";
 
 interface EditComponentFormProps {
   initialValues?: any;
@@ -54,6 +55,7 @@ export const EditComponentForm = ({
   const [borderRadius, setBorderRadius] = useState(initialValues.radius);
   const [boxShadow, setBoxShadow] = useState(initialValues.shadow);
   const { mutate, isPending } = useUpdateUI();
+  const { data: user } = useCurrent();
 
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
@@ -65,7 +67,7 @@ export const EditComponentForm = ({
       cssFramework: initialValues.cssFramework,
       radius: initialValues.radius,
       shadow: initialValues.shadow,
-      prompt: initialValues.prompt
+      prompt: initialValues.prompt,
     },
   });
 
@@ -82,8 +84,7 @@ export const EditComponentForm = ({
     } else {
       form.reset();
     }
-    
-  },[initialValues , form])
+  }, [initialValues, form]);
 
   const onSubmit = (values: z.infer<typeof createComponentSchema>) => {
     mutate({ json: values });
@@ -143,14 +144,18 @@ export const EditComponentForm = ({
                     onValueChange={field.onChange}
                     value={field.value}
                     defaultValue={initialValues.jsFramework}
+                    disabled={user?.profile.plan === "free"}
                   >
                     <FormControl>
-                      <SelectTrigger
-                        disabled={isPending}
-                        className="capitalize"
-                      >
-                        <SelectValue placeholder="Select a js Framework" />
-                      </SelectTrigger>
+                      <div className="w-full space-y-3">
+                        <SelectTrigger
+                          className="w-full capitalize"
+                          disabled={isPending || user?.profile.plan === "free"}
+                        >
+                          <SelectValue placeholder="Select a JS Framework" />
+                        </SelectTrigger>
+                        {user?.profile.plan === "free" && <PremiumText />}
+                      </div>
                     </FormControl>
                     <SelectContent>
                       {jsFrameworks.map((framework) => (
@@ -219,7 +224,10 @@ export const EditComponentForm = ({
                     defaultValue={initialValues.layout}
                   >
                     <FormControl>
-                      <SelectTrigger disabled={isPending} className="uppercase">
+                      <SelectTrigger
+                        disabled={isPending}
+                        className="capitalize"
+                      >
                         <SelectValue placeholder="Select a Layout" />
                       </SelectTrigger>
                     </FormControl>
@@ -265,12 +273,19 @@ export const EditComponentForm = ({
                         defaultValue={initialValues.theme}
                       >
                         <FormControl>
-                          <SelectTrigger
-                            disabled={isPending}
-                            className="capitalize mb-5"
-                          >
-                            <SelectValue placeholder="Select a Theme" />
-                          </SelectTrigger>
+                          <div className="w-full space-y-3">
+                            <SelectTrigger
+                              className="w-full capitalize"
+                              disabled={
+                                isPending || user?.profile.plan === "free"
+                              }
+                            >
+                              <SelectValue placeholder="select a theme" />
+                            </SelectTrigger>
+                            {user?.profile.plan === "free" && (
+                              <PremiumText />
+                            )}{" "}
+                          </div>
                         </FormControl>
                         <SelectContent>
                           {Object.keys(themes).map((key) => (

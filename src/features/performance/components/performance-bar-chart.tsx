@@ -21,10 +21,10 @@ import {
 import {
   ChartConfig,
   ChartContainer,
-  ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useGetPerformanceMetrics } from "../api/use-get-performance-metrics";
+import { PremiumCard } from "@/features/component/components/premium-card";
 
 const chartConfig = {
   responseTime: {

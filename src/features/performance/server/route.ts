@@ -1,4 +1,4 @@
-import { DATABASES_ID, PERFORMANCE_ID } from "@/config";
+import { DATABASES_ID, PERFORMANCE_ID, PROFILES_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { Hono } from "hono";
 import { Query } from "node-appwrite";
@@ -10,6 +10,14 @@ const app = new Hono().get("/", sessionMiddleware, async (c) => {
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }
+
+  const userId = user.$id;
+
+  const profile = await databases.getDocument(
+    DATABASES_ID,
+    PROFILES_ID,
+    userId,
+  )
 
   const response = await databases.listDocuments(
     DATABASES_ID,
@@ -23,7 +31,7 @@ const app = new Hono().get("/", sessionMiddleware, async (c) => {
     timestamp: doc.timestamp,
   }));
 
-  if (responseTimes.length === 0) {
+  if (responseTimes.length === 0 || profile.plan === "free") {
     return c.json({
       message: "No analytics data available",
       totalRequests: 0,

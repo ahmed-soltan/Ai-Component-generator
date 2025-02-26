@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries"
 
-import { PerformanceMetricsContainer } from "@/features/performance/components/performance-metrics-container";
+import PerformanceMetricsClient from "./client";
 
 const PerformanceMetrics = async() => {
     const user = await getCurrent();
@@ -10,7 +10,8 @@ const PerformanceMetrics = async() => {
     if(!user){
         redirect('/sign-in')
     }
-  return <PerformanceMetricsContainer/>
+
+  return <PerformanceMetricsClient/>
 }
 
 export default PerformanceMetrics

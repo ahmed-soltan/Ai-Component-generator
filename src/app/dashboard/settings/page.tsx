@@ -1,15 +1,8 @@
-import Link from "next/link";
-
 import { redirect } from "next/navigation";
 
 import { Separator } from "@/components/ui/separator";
 import { ContainerWrapper } from "@/components/container-wrapper";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { FreePlanBanner } from "@/features/settings/components/free-plan-banner";
 import { AccountSettings } from "@/features/settings/components/account-settings";
 import { PreferencesSettings } from "@/features/settings/components/preferences-settings";
 
@@ -21,6 +14,8 @@ const SettingsPage = async () => {
   if (!user) {
     redirect("/sign-in");
   }
+
+
   return (
     <ContainerWrapper className="flex flex-col items-start gap-10">
       <div className="flex flex-col gap-5">
@@ -29,19 +24,7 @@ const SettingsPage = async () => {
           Settings and Options for your application
         </p>
       </div>
-      <Card className="w-full">
-        <CardHeader className="bg-neutral-900 px-5 py-7 rounded-xl">
-          <CardTitle>Your Application is Currently on the free plan</CardTitle>
-          <CardDescription>
-            Upgrade to a paid plan to access more features and support. Learn
-            more{" "}
-            <Link href={"/plans"} className="underline">
-              here
-            </Link>
-            .
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <FreePlanBanner/>
       <Separator />
       <AccountSettings />
       <Separator />

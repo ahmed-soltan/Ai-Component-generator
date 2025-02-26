@@ -1,7 +1,17 @@
 "use client";
 
 import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, LineProps } from "recharts";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  LineProps,
+} from "recharts";
 
 import {
   Card,
@@ -18,6 +28,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useGetPerformanceMetrics } from "../api/use-get-performance-metrics";
+import { useCurrent } from "@/features/auth/api/use-current";
 
 const chartConfig = {
   responseTime: {
@@ -26,8 +37,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export const PerformanceLineChart =()=> {
+export const PerformanceLineChart = () => {
   const { data, isLoading, error } = useGetPerformanceMetrics();
+  const { data: user, isLoading: isLoadingUser } = useCurrent();
 
   if (isLoading) return <div>Loading performance data...</div>;
   if (error || !data) return <div>Error loading performance data.</div>;
@@ -46,10 +58,19 @@ export const PerformanceLineChart =()=> {
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
-          <ResponsiveContainer width="100%" height={200} className={"h-[500px]"}>
+          <ResponsiveContainer
+            width="100%"
+            height={200}
+            className={"h-[500px]"}
+          >
             <LineChart data={chartData} margin={{ left: 12, right: 12 }}>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="time" tickLine={false} axisLine={false} tickMargin={8} />
+              <XAxis
+                dataKey="time"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+              />
               <YAxis />
               <Tooltip content={<ChartTooltipContent />} />
               <Legend />
@@ -66,12 +87,14 @@ export const PerformanceLineChart =()=> {
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          Avg Response Time: {data.averageResponseTime}ms <TrendingUp className="h-4 w-4" />
+          Avg Response Time: {data.averageResponseTime}ms{" "}
+          <TrendingUp className="h-4 w-4" />
         </div>
         <div className="leading-none text-muted-foreground">
-          Min: {data.minResponseTime}ms | Max: {data.maxResponseTime}ms | Total Requests: {data.totalRequests}
+          Min: {data.minResponseTime}ms | Max: {data.maxResponseTime}ms | Total
+          Requests: {data.totalRequests}
         </div>
       </CardFooter>
     </Card>
   );
-}
+};
