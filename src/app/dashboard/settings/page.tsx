@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; 
+
 import { redirect } from "next/navigation";
 
 import { Separator } from "@/components/ui/separator";
@@ -12,7 +14,7 @@ const SettingsPage = async () => {
   const user = await getCurrent();
 
   if (!user) {
-    redirect("/sign-in");
+    redirect("/auth/sign-in");
   }
 
 

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; 
+
 import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries";
@@ -7,7 +9,7 @@ import { GeneratedComponentContainer } from "@/features/component/components/gen
 const ComponentIdPage = async () => {
   const user = await getCurrent();
   if (!user) {
-    redirect("/sign-in");
+    redirect("/auth/sign-in");
   }
   
   return <GeneratedComponentContainer />;

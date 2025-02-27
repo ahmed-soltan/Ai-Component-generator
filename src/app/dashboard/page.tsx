@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"; 
+
 import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries";
@@ -14,7 +16,7 @@ import { GenerationRadialChart } from "@/features/generation-analytics/component
 const DashboardPage = async () => {
   const user = await getCurrent();
 
-  if (!user) redirect("/sign-in");
+  if (!user) redirect("/auth/sign-in");
 
   return (
     <ContainerWrapper className="w-full h-full flex flex-col items-start gap-10">

@@ -1,17 +1,16 @@
-import dynamic from "next/dynamic";
+
+export const dynamic = "force-dynamic"; 
+
 import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries";
+import { SupportCenterContainer } from "@/features/support-center/components/support-center-container";
 
-const SupportCenterContainer = dynamic(
-  () => import("@/features/support-center/components/support-center-container").then(mod => mod.SupportCenterContainer),
-  { ssr: false }
-);
 const SupportCenterPage = async () => {
   const user = await getCurrent();
 
   if (!user) {
-    redirect("/sign-in");
+    redirect("/auth/sign-in");
   }
   return <SupportCenterContainer/>;
 };
