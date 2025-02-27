@@ -195,7 +195,7 @@ const app = new Hono()
       }
     );
 
-    const data = await response.json();
+    await response.json();
 
     return c.json({ success: true });
   })

@@ -157,11 +157,6 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       `;
 
       try {
-        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-        if (!GEMINI_API_KEY) {
-          return c.json({ error: "Missing Gemini API key" }, 500);
-        }
-
         const startTime = Date.now();
 
         const chatResponse = await client.chat.complete({

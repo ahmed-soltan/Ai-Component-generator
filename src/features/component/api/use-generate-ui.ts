@@ -32,7 +32,7 @@ export const useGenerateUI = () => {
       if (!response.ok) {
         const errorData: { error: string } | any = await response.json();
         toast.error(errorData.error, { id: toastId });
-        throw new Error(errorData.error || "Failed to save Component");
+        throw new Error(errorData.error || "Failed to Generate Component");
       }
 
       const responseData = await response.json();
@@ -40,7 +40,7 @@ export const useGenerateUI = () => {
       setCode(responseData.component as string); 
 
       queryClient.invalidateQueries({ queryKey: ["components"] });
-      toast.success("Component Created Successfully!", { id: toastId });
+      toast.success("Component Generated Successfully!", { id: toastId });
 
       return responseData;
     },
