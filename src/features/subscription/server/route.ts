@@ -53,13 +53,8 @@ const app = new Hono()
           },
         }
       );
-
-      const data = await response.json();
-
-      console.log(data);
     }
 
-    // Get plan info by matching plan name
     const plans = await databases.listDocuments(DATABASES_ID, PLANS_ID, [
       Query.equal("name", plan),
     ]);
@@ -69,7 +64,6 @@ const app = new Hono()
     }
     const planInfo = plans.documents[0];
 
-    // Determine the correct variant ID based on the plan name
     const variantId =
       plan === "pro"
         ? process.env.LEMON_SQUEEZY_PRO_PLAN_VARIANT_ID
@@ -81,7 +75,6 @@ const app = new Hono()
 
     const subscriptionId = ID.unique();
 
-    // Create the checkout session on Lemon Squeezy
     const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
       method: "POST",
       headers: {

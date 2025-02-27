@@ -361,7 +361,7 @@ export const EditComponentForm = ({
             <p className="dark:text-white font-medium">
               <GrCircleInformation className="size-5 inline mr-1 mb-1" />
               Note:{" "}
-              <span className="text-gray-400 font-normal">
+              <span className="text-gray-400 font-normal text-sm">
                 Please provide a detailed and clear prompt to help the AI
                 understand the task you want it to perform. A well-written
                 prompt can greatly enhance the accuracy and quality of the
