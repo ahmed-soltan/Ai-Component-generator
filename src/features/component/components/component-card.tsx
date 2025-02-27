@@ -1,8 +1,9 @@
 import Link from "next/link";
+import { useState } from "react";
 import { BiLogoCss3 } from "react-icons/bi";
 import { GoLinkExternal } from "react-icons/go";
 import { PencilIcon, Trash2 } from "lucide-react";
-import { IoExtensionPuzzleOutline, IoLogoJavascript } from "react-icons/io5";
+import { IoLogoJavascript } from "react-icons/io5";
 import { MdOutlineDarkMode } from "react-icons/md";
 
 import { formatDistance } from "date-fns";
@@ -10,11 +11,10 @@ import { formatDistance } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 import { ComponentType } from "../types";
 import { useDeleteComponent } from "../api/use-delete-component";
-import { ConfirmModal } from "@/components/confirm-modal";
-import { useState } from "react";
 
 interface ComponentCardProps {
   component: ComponentType;

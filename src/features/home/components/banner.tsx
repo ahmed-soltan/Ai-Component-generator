@@ -1,37 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, StarsIcon } from "lucide-react";
+
 import bannerImage from "../../../../public/Screenshot (343).png";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { CodeEditor } from "@/features/component/components/code-editor";
+
 import { useCurrent } from "@/features/auth/api/use-current";
-import Image from "next/image";
 
 export const Banner = () => {
   const { data: user } = useCurrent();
 
-  const code = `
-  const InspireCard = () => {
-    return (
-        <div className="p-6 bg-gradient-to-br from-purple-600 to-blue-500 rounded-xl shadow-lg text-white text-center">
-            <h1 className="text-4xl font-extrabold mb-3">Unleash Your Creativity</h1>
-            <p className="text-lg opacity-90">
-                Build stunning UI components effortlessly with AI-powered precision.
-            </p>
-            <button className="mt-5 px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg shadow-md hover:bg-purple-100 transition">
-                Generate Now 🚀
-            </button>
-        </div>
-    );
-};
-
-export default InspireCard;
-
-          `;
   return (
     <div className="w-full h-full">
       <div className="bg-gradient h-full min-h-[500px] rounded-xl flex flex-col items-center justify-center gap-8 px-4 pt-32">
@@ -54,7 +35,7 @@ export default InspireCard;
             className="text-lg py-6 group"
           >
             <Link href={!user ? "/sign-up" : "/dashboard/generate-component"}>
-              Get Started For Free{" "}
+              Get Started {user?.profile.plan === "free" && "For Free"}{" "}
               <ArrowRight className="ml-1 size-8 group-hover:translate-x-1 duration-150 transition-transform" />
             </Link>
           </Button>
@@ -70,7 +51,12 @@ export default InspireCard;
           )}
         </div>
         <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[650px] border shadow z-20 h-[300px]">
-          <Image src={bannerImage} alt="Code Generation" fill className="rounded-md"/>
+          <Image
+            src={bannerImage}
+            alt="Code Generation"
+            fill
+            className="rounded-md"
+          />
         </div>
       </div>
     </div>

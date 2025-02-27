@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { BreadcrumbsContainer } from "@/features/component/components/breadcrums-container";
+import { ContactModalContainer } from "@/features/subscription/components/contact-modal-container";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,7 @@ export default async function DashboardLayout({
       enableSystem
       disableTransitionOnChange
     >
+      <ContactModalContainer/>
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>

@@ -7,18 +7,21 @@ import { BsCopy } from "react-icons/bs";
 import { FaRegSave } from "react-icons/fa";
 import { BsDownload } from "react-icons/bs";
 
+import Hint from "./hint";
 import { Button } from "@/components/ui/button";
 import SandpackContainer from "@/features/component/components/sandpack-container";
 
 import { useCurrentComponent } from "../store/store";
+import { useCurrent } from "@/features/auth/api/use-current";
 import { useUpdateComponent } from "../api/use-update-component";
 
 export const ComponentPreviewEdit = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { mutate, isPending } = useUpdateComponent();
 
-  const {values , code , setCode} = useCurrentComponent()
+  const { data: user } = useCurrent();
 
+  const { values, code, setCode } = useCurrentComponent();
 
   const handleCopy = () => {
     setIsLoading(true);
@@ -56,17 +59,33 @@ export const ComponentPreviewEdit = () => {
             )}
             Copy Code
           </Button>
-          <Button variant={"secondary"} onClick={exportFile} disabled={isPending}>
-            <BsDownload className="size-7" />
-            Export
-          </Button>
+          <Hint
+            label={
+              user?.profile.plan === "free"
+                ? "Upgrade to Pro"
+                : "Download the Code"
+            }
+            align="center"
+            side="top"
+          >
+            <div>
+              <Button
+                variant={"secondary"}
+                onClick={exportFile}
+                disabled={isPending || user?.profile.plan === "free"}
+              >
+                <BsDownload className="size-7" />
+                Export
+              </Button>
+            </div>
+          </Hint>
           <Button variant={"success"} onClick={mutate} disabled={isPending}>
             <FaRegSave className="size-5" />
             Save
           </Button>
         </div>
       </div>
-      <SandpackContainer code={code} values={values} setCode={setCode}/>
+      <SandpackContainer code={code} values={values} setCode={setCode} />
     </div>
   );
 };

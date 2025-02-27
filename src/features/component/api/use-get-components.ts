@@ -1,5 +1,5 @@
 import { client } from "@/lib/rpc";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 interface useGetComponentsProps {
   jsFramework?: "react" | "vue" | "angular" | "vanilla";
@@ -14,26 +14,30 @@ export const useGetComponents = ({
   theme,
   search,
 }: useGetComponentsProps) => {
-  const query = useQuery({
-    queryKey: ["components", jsFramework, cssFramework, theme , search],
-    queryFn: async () => {
+  const query = useInfiniteQuery({
+    queryKey: ["components", jsFramework, cssFramework, theme, search],
+    queryFn: async ({ pageParam }: { pageParam?: string }) => {
       const response = await client.api.component["$get"]({
         query: {
           jsFramework,
           cssFramework,
           theme,
           search,
+          ...(pageParam ? { cursor: pageParam } : {}), 
+          limit: "10",
         },
       });
-      
+
       if (!response.ok) {
-        return null;
+        throw new Error("Failed to fetch components");
       }
-      
+
       const { data } = await response.json();
-      
+
       return data;
     },
+    initialPageParam: undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
   return query;

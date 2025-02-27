@@ -1,5 +1,4 @@
 import { parseAsString, parseAsStringEnum, useQueryStates } from "nuqs";
-import { jsFrameworks } from "../schema";
 
 export const useFilters = () => {
   return useQueryStates({

@@ -72,7 +72,6 @@ const app = new Hono()
       const isRestrictedFramework = jsFramework !== "react";
       const isRestrictedTheme = theme !== "earthy";
 
-      
       if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
         return c.json(
           { error: "Your plan does not support this feature" },
@@ -86,12 +85,18 @@ const app = new Hono()
         [Query.equal("userId", userId)]
       );
 
-      if(requests.total >= freePlanRequestsLimit && isFreePlan){
-        return c.json({ error: "You have reached your free plan requests limit" }, 403);
+      if (requests.total >= freePlanRequestsLimit && isFreePlan) {
+        return c.json(
+          { error: "You have reached your free plan requests limit" },
+          403
+        );
       }
 
-      if(requests.total >= proPlanRequestsLimit && isProPlan){
-        return c.json({ error: "You have reached your pro plan requests limit" }, 403);
+      if (requests.total >= proPlanRequestsLimit && isProPlan) {
+        return c.json(
+          { error: "You have reached your pro plan requests limit" },
+          403
+        );
       }
 
       const detailedPrompt = `
@@ -286,12 +291,16 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         cssFramework: z.enum(cssFrameworks).nullish(),
         theme: z.enum(themeKeys).nullish(),
         search: z.string().optional().nullish(),
+        cursor: z.string().optional().nullish(),
+        limit: z.string().nullish(),
       })
     ),
     async (c) => {
       const databases = c.get("databases");
       const user = c.get("user");
-      const { jsFramework, cssFramework, theme, search } = c.req.valid("query");
+
+      const { jsFramework, cssFramework, theme, search, limit, cursor } =
+        c.req.valid("query");
 
       if (!user) {
         return c.json({ error: "Unauthorized" }, 401);
@@ -315,13 +324,25 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         query.push(Query.search("name", search));
       }
 
-      const projects = await databases.listDocuments(
+      query.push(Query.limit(parseInt(limit!)));
+      if (cursor) {
+        query.push(Query.cursorAfter(cursor));
+      }
+
+      const components = await databases.listDocuments(
         DATABASES_ID,
         COMPONENTS_ID,
         query
       );
 
-      return c.json({ data: projects });
+      return c.json({
+        data: {
+          ...components,
+          nextCursor: components.documents.length
+            ? components.documents[components.documents.length - 1].$id
+            : null,
+        },
+      });
     }
   )
   .get("/:componentId", sessionMiddleware, async (c) => {

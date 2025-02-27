@@ -25,7 +25,7 @@ export const FreePlanBanner = () => {
           <CardDescription>
             Upgrade to a paid plan to access more features and support. Learn
             more{" "}
-            <Link href={"/plans"} className="underline">
+            <Link href={"/dashboard/subscription"} className="underline">
               here
             </Link>
             .

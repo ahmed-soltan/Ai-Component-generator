@@ -94,9 +94,8 @@ const app = new Hono()
           type: "checkouts",
           attributes: {
             product_options: {
-              // Use the variant ID as a number if required by product_options;
-              // otherwise, adjust accordingly.
               enabled_variants: [Number(variantId)],
+              "redirect_url": `${process.env.NEXT_PUBLIC_API_URL!}/dashboard/generate-component`,
             },
             checkout_options: {
               button_color: "#2DD272",
@@ -197,8 +196,6 @@ const app = new Hono()
     );
 
     const data = await response.json();
-
-    console.log(data);
 
     return c.json({ success: true });
   })

@@ -12,12 +12,15 @@ import SandpackContainer from "@/features/component/components/sandpack-containe
 
 import { useComponentStore } from "../store/store";
 import { useSaveComponent } from "../api/use-save-component";
+import { useCurrent } from "@/features/auth/api/use-current";
+import Hint from "./hint";
 
 export const ComponentPreviewCreate = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { mutate, isPending } = useSaveComponent();
 
-  const {values , code , setCode} = useComponentStore()
+  const { values, code, setCode } = useComponentStore();
+  const { data: user } = useCurrent();
 
   const handleCopy = () => {
     setIsLoading(true);
@@ -55,17 +58,33 @@ export const ComponentPreviewCreate = () => {
             )}
             Copy Code
           </Button>
-          <Button variant={"secondary"} onClick={exportFile} disabled={isPending}>
-            <BsDownload className="size-7" />
-            Export
-          </Button>
+          <Hint
+            label={
+              user?.profile.plan === "free"
+                ? "Upgrade to Pro"
+                : "Download the Code"
+            }
+            align="center"
+            side="top"
+          >
+            <div>
+              <Button
+                variant={"secondary"}
+                onClick={exportFile}
+                disabled={isPending || user?.profile.plan === "free"}
+              >
+                <BsDownload className="size-7" />
+                Export
+              </Button>
+            </div>
+          </Hint>
           <Button variant={"success"} onClick={mutate} disabled={isPending}>
             <FaRegSave className="size-5" />
             Save
           </Button>
         </div>
       </div>
-      <SandpackContainer code={code} values={values} setCode={setCode}/>
+      <SandpackContainer code={code} values={values} setCode={setCode} />
     </div>
   );
 };

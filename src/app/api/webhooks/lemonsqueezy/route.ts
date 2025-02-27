@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/appwrite";
 import { DATABASES_ID, PROFILES_ID, SUBSCRIPTIONS_ID } from "@/config";
-import { redirect } from "next/navigation";
 
 const SIGNING_SECRET = process.env.LEMONSQUEEZY_SIGNING_SECRET || "ahmed123"; // Replace with your actual secret
 
@@ -73,7 +72,6 @@ export async function POST(req: Request) {
           }
         );
 
-        redirect("/dashboard/generate-component")
         break;
       }
       case "subscription_cancelled":{
@@ -89,15 +87,11 @@ export async function POST(req: Request) {
           {
             paymentStatus: "cancelled",
           }
-        );
-
-        redirect("/")
-        
+        );        
       }
 
       case "subscription_payment_failed":
         console.log("Payment failed event received.");
-        redirect("/")
         break;
 
       default:

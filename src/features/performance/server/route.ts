@@ -1,7 +1,8 @@
-import { DATABASES_ID, PERFORMANCE_ID, PROFILES_ID } from "@/config";
-import { sessionMiddleware } from "@/lib/session-middleware";
 import { Hono } from "hono";
 import { Query } from "node-appwrite";
+
+import { sessionMiddleware } from "@/lib/session-middleware";
+import { DATABASES_ID, PERFORMANCE_ID, PROFILES_ID } from "@/config";
 
 const app = new Hono().get("/", sessionMiddleware, async (c) => {
   const user = c.get("user");
@@ -34,7 +35,7 @@ const app = new Hono().get("/", sessionMiddleware, async (c) => {
   if (responseTimes.length === 0 || profile.plan === "free") {
     return c.json({
       message: "No analytics data available",
-      totalRequests: 0,
+      totalRequests: responseTimes.length,
       successfulRequests: 0,
       failedRequests: 0,
       averageResponseTime: 0,

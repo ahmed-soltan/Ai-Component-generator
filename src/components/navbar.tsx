@@ -27,9 +27,6 @@ export const Navbar = () => {
           <Link href={"/pricing"} className="font-semibold">
             Pricing
           </Link>
-          <Link href={"/contact"} className="font-semibold">
-            Contact Us
-          </Link>
         </div>
       </div>
       <div>

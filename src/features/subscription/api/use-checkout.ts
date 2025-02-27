@@ -10,10 +10,11 @@ export const useCheckout = () => {
       if (!response.ok) {
         throw new Error("Failed to checkout");
       }
-      const data = await response.json();
-      //@ts-ignore
+      const data = (await response.json()) as {
+        checkout_url: string;
+      };
+
       if (data.checkout_url) {
-        //@ts-ignore
         window.location.href = data.checkout_url;
       } else {
         alert("Error creating checkout session");

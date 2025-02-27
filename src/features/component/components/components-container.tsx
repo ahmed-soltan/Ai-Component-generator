@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Filters } from "./filters";
@@ -15,13 +15,35 @@ import { cssFrameworks, jsFrameworks, themes } from "../schema";
 
 export const ComponentsContainer = () => {
   const [{ jsFramework, cssFramework, theme, search }, _] = useFilters();
-  const { data, isLoading } = useGetComponents({
-    jsFramework: (jsFramework as (typeof jsFrameworks)[number]) || undefined,
-    cssFramework:
-      (cssFramework as (typeof cssFrameworks)[number]) || undefined,
-    theme: (theme as keyof typeof themes) || undefined,
-    search: search || undefined,
-  });
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useGetComponents({
+      jsFramework: (jsFramework as (typeof jsFrameworks)[number]) || undefined,
+      cssFramework:
+        (cssFramework as (typeof cssFrameworks)[number]) || undefined,
+      theme: (theme as keyof typeof themes) || undefined,
+      search: search || undefined,
+    });
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!loadMoreRef.current || !hasNextPage || isFetchingNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    observer.observe(loadMoreRef.current);
+
+    return () => {
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isLoading) {
     return (
@@ -37,11 +59,25 @@ export const ComponentsContainer = () => {
       <Separator />
       <Filters />
       <div className="flex flex-col items-start gap-5 w-full">
-        {data?.documents.map((component) => (
-          //@ts-ignore
-          <ComponentCard key={component.$id} component={component!} />
-        ))}
+        {data?.pages
+          .flatMap((page) => page.documents)
+          .map((component, index, array) => (
+            <div
+              key={component.$id}
+              ref={index === array.length - 1 ? loadMoreRef : null}
+              className="w-full"
+            >
+              {/**@ts-ignore */}
+              <ComponentCard component={component} />
+            </div>
+          ))}
       </div>
+
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center w-full">
+          <Loader2 className="animate-spin size-6" />
+        </div>
+      )}
     </ContainerWrapper>
   );
 };
