@@ -3,8 +3,6 @@
 import { z } from "zod";
 import Link from "next/link";
 import { Loader } from "lucide-react";
-import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -20,8 +18,9 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { registerSchema } from "../schemas";
 import { useSignUp } from "../api/use-sign-up";
+
+import { registerSchema } from "../schemas";
 
 export const SignUpForm = () => {
   const { mutate, isPending } = useSignUp();
@@ -112,28 +111,6 @@ export const SignUpForm = () => {
           </Form>
         </CardContent>
         <Separator />
-        <CardContent className="p-7 flex flex-col gap-y-4">
-          <Button
-            variant={"secondary"}
-            size={"lg"}
-            className="w-full"
-            disabled={isPending}
-            // onClick={()=>signUpWithGoogle()}
-          >
-            <FcGoogle className="mr-2 size-5" />
-            Continue With Google
-          </Button>
-          <Button
-            variant={"secondary"}
-            size={"lg"}
-            className="w-full"
-            disabled={isPending}
-            // onClick={()=>signUpWithGithub()}
-          >
-            <FaGithub className="mr-2 size-5" />
-            Continue With Github
-          </Button>
-        </CardContent>
         <Separator />
         <CardContent className="p-7 flex items-center justify-center">
           Already Have an Account?{" "}

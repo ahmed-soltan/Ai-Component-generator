@@ -23,10 +23,10 @@ const AuthLayout = ({ children }: AuthProps) => {
           <Button asChild>
             <Link
               href={
-                pathname === "/sign-in" ? "/sign-up" : "/sign-in"
+                pathname === "/auth/sign-in" ? "/auth/sign-up" : "/auth/sign-in"
               }
             >
-              {pathname === "/sign-in" ? "Sign Up" : "Login"}
+              {pathname === "/auth/sign-in" ? "Sign Up" : "Login"}
             </Link>
           </Button>
         </nav>

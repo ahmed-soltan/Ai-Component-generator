@@ -3,8 +3,6 @@
 import { z } from "zod";
 import Link from "next/link";
 import { Loader } from "lucide-react";
-import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -20,8 +18,9 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { loginSchema } from "../schemas";
 import { useSignIn } from "../api/use-sign-in";
+
+import { loginSchema } from "../schemas";
 
 export const SignInForm = () => {
   const { mutate, isPending } = useSignIn();
@@ -94,32 +93,10 @@ export const SignInForm = () => {
           </Form>
         </CardContent>
         <Separator />
-        <CardContent className="p-7 flex flex-col gap-y-4">
-          <Button
-            variant={"secondary"}
-            size={"lg"}
-            className="w-full"
-            disabled={isPending}
-            // onClick={()=>signUpWithGoogle()}
-          >
-            <FcGoogle className="mr-2 size-5" />
-            Continue With Google
-          </Button>
-          <Button
-            variant={"secondary"}
-            size={"lg"}
-            className="w-full"
-            disabled={isPending}
-            // onClick={()=>signUpWithGithub()}
-          >
-            <FaGithub className="mr-2 size-5" />
-            Continue With Github
-          </Button>
-        </CardContent>
         <Separator />
         <CardContent className="p-7 flex items-center justify-center">
           Don&apos;t Have an Account?{" "}
-          <Link href={"/sign-up"}>
+          <Link href={"/auth/sign-up"}>
             <span className="text-blue-700">&nbsp;Sign Up</span>
           </Link>
         </CardContent>

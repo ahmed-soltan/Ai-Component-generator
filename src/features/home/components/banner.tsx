@@ -34,7 +34,7 @@ export const Banner = () => {
             asChild
             className="text-lg py-6 group"
           >
-            <Link href={!user ? "/sign-up" : "/dashboard/generate-component"}>
+            <Link href={!user ? "/auth/sign-up" : "/dashboard/generate-component"}>
               Get Started {user?.profile.plan === "free" && "For Free"}{" "}
               <ArrowRight className="ml-1 size-8 group-hover:translate-x-1 duration-150 transition-transform" />
             </Link>
@@ -46,7 +46,7 @@ export const Banner = () => {
               asChild
               className="text-lg py-6"
             >
-              <Link href={"/sign-up"}>Sign Up </Link>
+              <Link href={"/auth/sign-up"}>Sign Up </Link>
             </Button>
           )}
         </div>

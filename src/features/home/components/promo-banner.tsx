@@ -23,7 +23,7 @@ export const PromoBanner = () => {
         size={"lg"}
         className="w-full max-w-[200px] text-lg"
       >
-        <Link href={!user ? "/sign-up" : "/dashboard/generate-component"}>Get Started</Link>
+        <Link href={!user ? "/auth/sign-up" : "/dashboard/generate-component"}>Get Started</Link>
       </Button>
     </div>
   );
