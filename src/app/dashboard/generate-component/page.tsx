@@ -1,10 +1,9 @@
-export const dynamic = "force-dynamic"; 
-
 import { redirect } from "next/navigation";
 
 import { getCurrent } from "@/features/auth/queries";
 
 import { GenerateComponentClient } from "./generate-component-client";
+import { Suspense } from "react";
 
 const GenerateComponentPage = async () => {
   const user = await getCurrent();
@@ -13,7 +12,11 @@ const GenerateComponentPage = async () => {
     redirect("/auth/sign-in");
   }
 
-  return <GenerateComponentClient />;
+  return (
+    <Suspense fallback={<div>loading...</div>}>
+      <GenerateComponentClient />
+    </Suspense>
+  );
 };
 
 export default GenerateComponentPage;
