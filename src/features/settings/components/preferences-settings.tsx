@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 
 import { useCurrent } from "@/features/auth/api/use-current";
+import { useUpdatePreferences } from "../api/use-update-preferences";
 
 import {
   cssFrameworks,
@@ -34,17 +35,14 @@ import {
   themes,
 } from "@/features/component/schema";
 
-import { useUpdatePreferences } from "../api/use-update-preferences";
-
 import { cn } from "@/lib/utils";
-import { useCancelSubscription } from "@/features/subscription/api/use-cancel-subscription";
 
 export const PreferencesSettings = () => {
-  const { data: user, isLoading } = useCurrent();
-  const [borderRadius, setBorderRadius] = useState("none");
   const [boxShadow, setBoxShadow] = useState("none");
+  const [borderRadius, setBorderRadius] = useState("none");
+  
+  const { data: user, isLoading } = useCurrent();
   const { mutate, isPending } = useUpdatePreferences();
-  const {mutate:cancelSubscription} = useCancelSubscription()
 
   const form = useForm({
     defaultValues: {
@@ -345,7 +343,6 @@ export const PreferencesSettings = () => {
             </div>
           </form>
         </Form>
-        <Button onClick={()=>cancelSubscription()}>Cancel Subscription</Button>
       </CardContent>
     </Card>
   );

@@ -66,6 +66,9 @@ export const SubscriptionContainer = () => {
     (plan) => plan.name === user?.profile.plan
   )?.generate_components_limit;
 
+  console.log({planRequestsLimit})
+  console.log({planGenerateComponentsLimit})
+
   return (
     <ContainerWrapper className="flex items-start flex-col gap-14 sm:max-w-[95%] lg:max-w-[85%]">
       <div className="w-full rounded-xl bg-neutral-900 p-10 flex flex-col items-start gap-14">
@@ -153,7 +156,7 @@ export const SubscriptionContainer = () => {
         </div>
         <Progress
           className="w-full"
-          max={planRequestsLimit}
+          max={planRequestsLimit === -1 ? 1 : planRequestsLimit}
           value={performanceMetricsData?.totalRequests}
         />
       </div>
@@ -171,7 +174,9 @@ export const SubscriptionContainer = () => {
         </div>
         <Progress
           className="w-full"
-          max={planGenerateComponentsLimit}
+          max={planGenerateComponentsLimit === -1
+            ? 1
+            : planGenerateComponentsLimit}
           value={generationAnalyticsData?.totalComponents}
         />
       </div>
