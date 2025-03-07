@@ -67,7 +67,6 @@ export default MyComponent;
         customSetup={{
           dependencies: {
             "react-icons": "latest",
-            "react-bootstrap": "latest",
           },
         }}
         options={{
