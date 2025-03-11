@@ -7,7 +7,7 @@ export const Logo = () => {
       <div className="gr-bg rounded-md size-10 flex items-center justify-center text-center">
         <Stars className="size-5 text-white" />
       </div>
-      <span className="text-xl font-semibold">Sultana</span>
+      <span className="text-xl font-semibold">Sultan</span>
     </Link>
   );
 };

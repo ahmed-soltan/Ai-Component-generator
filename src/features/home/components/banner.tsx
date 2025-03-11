@@ -18,7 +18,7 @@ export const Banner = () => {
       <div className="bg-gradient h-full min-h-[500px] rounded-xl flex flex-col items-center justify-center gap-8 px-4 pt-32">
         <div className="bg-image" />
         <h1 className="text-4xl md:text-6xl font-semibold max-w-[900px] text-center text-gray-800 z-10 md:leading-[70px] capitalize">
-          Generate Your UI Component With Our Sultana AI{" "}
+          Generate Your UI Component With Our Sultan AI{" "}
           <StarsIcon className="size-8 md:size-14 mb-3 inline" />
         </h1>
         <p className="text-md md:text-xl font-semibold max-w-[900px] text-center text-gray-700 z-10">
