@@ -282,9 +282,7 @@ export const EditComponentForm = ({
                             >
                               <SelectValue placeholder="select a theme" />
                             </SelectTrigger>
-                            {user?.profile.plan === "free" && (
-                              <PremiumText />
-                            )}{" "}
+                            {user?.profile.plan === "free" && <PremiumText />}{" "}
                           </div>
                         </FormControl>
                         <SelectContent>
@@ -372,36 +370,38 @@ export const EditComponentForm = ({
               name="prompt"
               control={form.control}
               render={({ field }) => (
-                <FormItem className="w-full relative">
+                <FormItem className="w-full">
                   <FormLabel className="dark:text-gray-300">
                     AI Prompt
                   </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      rows={5}
-                      {...field}
-                      placeholder="Enter Your Component Description"
-                      className="w-full pb-12"
+                  <div className="w-full relative border border-neutral-400 rounded-md flex flex-col items-end justify-end gap-3 p-2">
+                    <FormControl>
+                      <Textarea
+                        rows={5}
+                        {...field}
+                        placeholder="Enter Your Component Description"
+                        className="w-full border-none outline-none focus:ring-0 focus-visible:ring-0 p-0"
+                        disabled={isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                    <Button
+                      size="icon"
+                      variant="primary"
+                      type="submit"
+                      className=" w-auto px-2"
                       disabled={isPending}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                  <Button
-                    size="icon"
-                    variant="primary"
-                    type="submit"
-                    className="absolute right-2 bottom-2 w-auto px-2"
-                    disabled={isPending}
-                  >
-                    {isPending ? (
-                      <Loader2 className="animate-spin size-4" />
-                    ) : (
-                      <>
-                        Generate
-                        <FaMagic className="size-2" />
-                      </>
-                    )}
-                  </Button>
+                    >
+                      {isPending ? (
+                        <Loader2 className="animate-spin size-4" />
+                      ) : (
+                        <>
+                          Generate
+                          <FaMagic className="size-2" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </FormItem>
               )}
             />

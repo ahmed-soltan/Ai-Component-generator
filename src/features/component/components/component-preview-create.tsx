@@ -13,7 +13,7 @@ import SandpackContainer from "@/features/component/components/sandpack-containe
 import { useComponentStore } from "../store/store";
 import { useSaveComponent } from "../api/use-save-component";
 import { useCurrent } from "@/features/auth/api/use-current";
-import Hint from "./hint";
+import Hint from "../../../components/hint";
 
 export const ComponentPreviewCreate = () => {
   const [isLoading, setIsLoading] = useState(false);

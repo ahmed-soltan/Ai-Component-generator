@@ -6,7 +6,7 @@ import { getCurrent } from "@/features/auth/queries";
 
 import { Separator } from "@/components/ui/separator";
 import { ContainerWrapper } from "@/components/container-wrapper";
-import { PremiumCard } from "@/features/component/components/premium-card";
+import { PremiumCard } from "@/components/premium-card";
 import { PerformanceBarChart } from "@/features/performance/components/performance-bar-chart";
 import { PerformanceLineChart } from "@/features/performance/components/performance-line-chart";
 import { PerformanceRadialChart } from "@/features/performance/components/performance-radial-chart";

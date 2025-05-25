@@ -14,8 +14,8 @@ import { RiAiGenerate2 } from "react-icons/ri";
 import { MdSpaceDashboard } from "react-icons/md";
 import { AiOutlineBarChart } from "react-icons/ai";
 
-import { NavMain } from "@/features/component/components/nav-main";
-import { NavUser } from "@/features/component/components/nav-user";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,

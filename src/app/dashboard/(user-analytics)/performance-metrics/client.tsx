@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 
-import { PremiumCard } from "@/features/component/components/premium-card";
+import { PremiumCard } from "@/components/premium-card";
 import { PerformanceMetricsContainer } from "@/features/performance/components/performance-metrics-container";
 
 import { useCurrent } from "@/features/auth/api/use-current";

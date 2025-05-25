@@ -24,7 +24,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { useGetPerformanceMetrics } from "../api/use-get-performance-metrics";
-import { PremiumCard } from "@/features/component/components/premium-card";
+import { PremiumCard } from "@/components/premium-card";
 
 const chartConfig = {
   responseTime: {

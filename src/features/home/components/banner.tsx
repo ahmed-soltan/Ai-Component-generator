@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, StarsIcon } from "lucide-react";
 
-import bannerImage from "../../../../public/Screenshot (343).png";
+import bannerImage from "../../../../public/Screenshot (476).png";
 
 import { Button } from "@/components/ui/button";
 
@@ -50,7 +50,7 @@ export const Banner = () => {
             </Button>
           )}
         </div>
-        <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[650px] border shadow z-20 h-[300px]">
+        <div className="translate-y-32 bg-white rounded-md flex flex-col gap-4 p-4 w-full max-w-[1000px] border shadow z-20 h-[450px]">
           <Image
             src={bannerImage}
             alt="Code Generation"

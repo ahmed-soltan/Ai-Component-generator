@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/features/component/components/app-sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { ThemeProvider } from "@/features/component/components/dashboard-provider";
 import {
@@ -7,7 +7,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import { BreadcrumbsContainer } from "@/features/component/components/breadcrums-container";
+import { BreadcrumbsContainer } from "@/components/breadcrums-container";
 import { ContactModalContainer } from "@/features/subscription/components/contact-modal-container";
 
 interface DashboardLayoutProps {

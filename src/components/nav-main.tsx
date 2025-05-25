@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
 import {
@@ -17,7 +18,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function NavMain({
   items,
@@ -33,22 +35,31 @@ export function NavMain({
     }[];
   }[];
 }) {
+  const pathname = usePathname();
+  const pathnameArray = pathname.split("/").filter((pathname) => pathname);
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Platform</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           const Icon = item.icon;
+          const url = item.url.split("/");
           return (
             <Collapsible key={item.title} asChild className="group/collapsible">
-              <SidebarMenuItem>
+              <SidebarMenuItem
+                className={cn(
+                  pathnameArray[pathnameArray.length - 1].includes(
+                    url[url.length - 1]
+                  ) && "bg-neutral-700 rounded-md  text-white"
+                )}
+              >
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.title} asChild>
                     <Link
                       href={
                         item.items && item.items.length > 0 ? "#" : item.url
                       }
-                      
                     >
                       {item.icon && <Icon />}
                       <span>{item.title}</span>
@@ -63,8 +74,16 @@ export function NavMain({
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => {
                         const SubIcon = subItem.icon;
+                        const subUrl = subItem.url.split("/");
                         return (
-                          <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubItem
+                            key={subItem.title}
+                            className={cn(
+                              pathnameArray[pathnameArray.length - 1].includes(
+                                subUrl[subUrl.length - 1]
+                              ) && "bg-neutral-700 rounded-md  text-white"
+                            )}
+                          >
                             <SidebarMenuSubButton asChild>
                               <Link href={subItem.url}>
                                 {subItem.icon && <SubIcon />}

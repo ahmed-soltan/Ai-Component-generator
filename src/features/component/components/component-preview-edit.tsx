@@ -7,7 +7,7 @@ import { BsCopy } from "react-icons/bs";
 import { FaRegSave } from "react-icons/fa";
 import { BsDownload } from "react-icons/bs";
 
-import Hint from "./hint";
+import Hint from "../../../components/hint";
 import { Button } from "@/components/ui/button";
 import SandpackContainer from "@/features/component/components/sandpack-container";
 
