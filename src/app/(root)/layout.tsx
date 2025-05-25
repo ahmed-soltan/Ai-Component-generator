@@ -10,7 +10,7 @@ export default function HomeLayout({
   return (
     <ContainerWrapper>
       <Navbar />
-      <main>{children}</main>
+      <main className="bg-white">{children}</main>
       <Footer />
     </ContainerWrapper>
   );

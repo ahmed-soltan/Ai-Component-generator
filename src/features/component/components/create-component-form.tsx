@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { PremiumText } from "@/components/premium-text";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import {
   Select,
@@ -42,7 +43,6 @@ import { cn } from "@/lib/utils";
 
 import { useGenerateUI } from "../api/use-generate-ui";
 import { useCurrent } from "@/features/auth/api/use-current";
-import { PremiumText } from "@/components/premium-text";
 
 interface CreateComponentFormProps {
   initialValues: any;
@@ -86,9 +86,20 @@ export const CreateComponentForm = ({
     }
   };
 
+  let title = form.getValues("name")
+  useEffect(() => {
+   const subscription = form.watch((value, { name }) => {
+    if (name === 'name') {
+      title =value.name || 'untitled'
+    }
+  });
+  
+  return () => subscription.unsubscribe();
+  },[form]);
+
   return (
     <div className="flex flex-col gap-5 p-4 w-full h-full">
-      <h1 className="text-2xl font-semibold">{form.getValues("name")}</h1>
+      <h1 className="text-2xl font-semibold">{title}</h1>
       <Separator />
       <Form {...form}>
         <form

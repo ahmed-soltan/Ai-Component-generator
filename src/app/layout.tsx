@@ -26,7 +26,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <Toaster richColors />
-        <Providers>{children}</Providers>
+        <Providers>
+          <main className="bg-white">{children}</main>
+        </Providers>
       </body>
     </html>
   );

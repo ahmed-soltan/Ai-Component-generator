@@ -17,7 +17,7 @@ export const Navbar = () => {
       bg-white rounded-2xl m-auto md:fixed z-30 top-10 md:left-1/2 
         transform md:-translate-x-1/2 md:px-5 border shadow-sm"
     >
-      <div className="flex items-center gap-5">
+      <div className="flex items-center gap-5 text-black">
         <Logo />
         <div className="hidden md:flex gap-5">
           |
