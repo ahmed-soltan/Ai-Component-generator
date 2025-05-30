@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Overview 
 
-## Getting Started
+## Purpose and Scope
+The AI Component Generator is a full-stack web application that enables users to generate, customize, and manage UI components using artificial intelligence. The system provides a freemium SaaS model with subscription-based feature gating, real-time component preview, and code export capabilities.
 
-First, run the development server:
+This document covers the overall system architecture, core technologies, and high-level component interactions. For detailed information about specific subsystems, see Component Generation System, Authentication System, Subscription Management, and API Reference.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## System Architecture Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+![Screenshot (494)](https://github.com/user-attachments/assets/96ef4dbf-f0e0-4171-a406-346904639d2c)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+<br/>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technology Stack
 
-## Learn More
+| **Layer**           | **Technology**                               | **Purpose**                                      |
+|---------------------|-----------------------------------------------|--------------------------------------------------|
+| Frontend Framework  | [Next.js 14](https://nextjs.org/)             | App Router, SSR, and React framework             |
+| State Management    | [Zustand](https://github.com/pmndrs/zustand)  | Global component state management                |
+| Server State        | [React Query](https://tanstack.com/query)     | API data fetching and caching                    |
+| API Framework       | [Hono](https://hono.dev/)                     | Lightweight backend API framework                |
+| Database/Auth       | [Appwrite](https://appwrite.io/)              | Backend-as-a-Service for data and authentication |
+| AI Service          | [Mistral AI](https://docs.mistral.ai/)        | Component code generation                        |
+| Code Preview        | [Sandpack](https://sandpack.codesandbox.io/)  | Live component preview and editing               |
+| Payment             | [Lemon Squeezy](https://www.lemonsqueezy.com/)| Subscription billing and checkout                |
+| UI Components       | [Radix UI](https://www.radix-ui.com/) + [Tailwind CSS](https://tailwindcss.com/) | Design system and styling  |
+| Form Handling       | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) | Form validation and management |
+<br/>
 
-To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Core Component Generation Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+![Screenshot (495)](https://github.com/user-attachments/assets/6c6badd1-4235-45ba-810c-4a6fd5cc1479)
 
-## Deploy on Vercel
+<br/>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Subscription Plan Management
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The system implements a **three-tier freemium model** with plan-based feature restrictions:
+
+| **Plan**      | **AI Requests/Month** | **Frameworks**     | **Themes**     | **Components Limit** |
+|---------------|------------------------|---------------------|----------------|------------------------|
+| Free          | 500                    | React only          | Earthy only    | 10                     |
+| Pro           | 1000                   | All frameworks      | All themes     | 50                     |
+| Enterprise    | Unlimited              | All frameworks      | All themes     | Unlimited              |
+
+<br/>
+
+## SandpackProvider Configuration
+The preview system includes:
+
+- External Resources: Bootstrap CSS, Tailwind CSS browser bundle
+- Dependencies: react-icons for icon support
+- Custom Setup: Template-specific configuration
+- Real-time Updates: recompileMode: "immediate" with autoReload: true
