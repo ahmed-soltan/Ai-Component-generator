@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic"; 
+export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 
@@ -8,6 +8,8 @@ import { GenerationAnalyticsContainer } from "@/features/generation-analytics/co
 
 const GenerationAnalyticsPage = async () => {
   const user = await getCurrent();
+
+  Promise.resolve(() => setTimeout(() => {}, 1000));
 
   if (!user) {
     redirect("/auth/sign-in");
