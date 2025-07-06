@@ -327,7 +327,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       const components = await databases.listDocuments(
         DATABASES_ID,
         COMPONENTS_ID,
-        query
+        [...query, Query.orderDesc("$createdAt")]
       );
 
       return c.json({
