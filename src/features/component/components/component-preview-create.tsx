@@ -14,13 +14,21 @@ import { useComponentStore } from "../store/store";
 import { useSaveComponent } from "../api/use-save-component";
 import { useCurrent } from "@/features/auth/api/use-current";
 import Hint from "../../../components/hint";
+import { useUpdateComponent } from "../api/use-update-component";
+import { usePathname } from "next/navigation";
 
 export const ComponentPreviewCreate = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { mutate, isPending } = useSaveComponent();
+  const pathname = usePathname();
+  const { mutate: saveComponent, isPending: isSavingComponent } =
+    useSaveComponent();
+  const { mutate: updateComponent, isPending: isUpdatingComponent } =
+    useUpdateComponent();
 
   const { values, code, setCode } = useComponentStore();
   const { data: user } = useCurrent();
+
+  const componentId = pathname.split("/").pop();
 
   const handleCopy = () => {
     setIsLoading(true);
@@ -41,6 +49,16 @@ export const ComponentPreviewCreate = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const isPending = isSavingComponent || isUpdatingComponent;
+
+  const handleSave = () => {
+    if (componentId && componentId.length === 24) {
+      updateComponent(componentId); 
+    } else {
+      saveComponent(); 
+    }
   };
 
   return (
@@ -78,7 +96,7 @@ export const ComponentPreviewCreate = () => {
               </Button>
             </div>
           </Hint>
-          <Button variant={"success"} onClick={mutate} disabled={isPending}>
+          <Button variant={"success"} onClick={handleSave} disabled={isPending}>
             <FaRegSave className="size-5" />
             Save
           </Button>

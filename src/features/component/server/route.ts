@@ -382,6 +382,8 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         code,
       } = c.req.valid("json");
 
+      console.log(name)
+
       const savedComponent = await databases.updateDocument(
         DATABASES_ID,
         COMPONENTS_ID,

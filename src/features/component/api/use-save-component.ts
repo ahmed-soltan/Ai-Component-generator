@@ -19,7 +19,7 @@ export const useSaveComponent = () => {
 
   const { values, code, setCode, setValues } = useComponentStore();
 
-  const mutation = useMutation<ResponseType, Error, any>({
+  const mutation = useMutation<ResponseType, Error, void>({
     mutationFn: async () => {
       toast.loading("Saving Component....", { id: toastId });
 
@@ -50,6 +50,7 @@ export const useSaveComponent = () => {
       queryClient.invalidateQueries({ queryKey: ["components"] });
       toast.success("Component saved Successfully!", { id: toastId });
 
+      
       router.push("/dashboard/generated-components");
       setCode("");
       setValues({});

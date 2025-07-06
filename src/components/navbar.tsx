@@ -34,7 +34,7 @@ export const Navbar = () => {
           <Button onClick={() => mutate()}>Logout</Button>
         ) : (
           <Button asChild>
-            <Link href={"/sign-in"}>Sign In</Link>
+            <Link href={"/auth/sign-in"}>Login</Link>
           </Button>
         )}
       </div>

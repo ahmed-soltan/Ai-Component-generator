@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Loader2, Settings } from "lucide-react";
 
@@ -21,8 +21,8 @@ import { CreateComponentForm } from "@/features/component/components/create-comp
 import { useComponentStore } from "@/features/component/store/store";
 import { useCurrent } from "@/features/auth/api/use-current";
 
-export const GenerateComponentClient = () =>{
-    const { values } = useComponentStore();
+export const GenerateComponentClient = () => {
+  const { values } = useComponentStore();
   const { data: user, isLoading } = useCurrent();
 
   if (isLoading) {
@@ -80,4 +80,4 @@ export const GenerateComponentClient = () =>{
       </div>
     </>
   );
-}
+};

@@ -43,6 +43,7 @@ import { cn } from "@/lib/utils";
 
 import { useGenerateUI } from "../api/use-generate-ui";
 import { useCurrent } from "@/features/auth/api/use-current";
+import { useComponentStore } from "../store/store";
 
 interface CreateComponentFormProps {
   initialValues: any;
@@ -55,6 +56,7 @@ export const CreateComponentForm = ({
   const [boxShadow, setBoxShadow] = useState(initialValues.shadow);
   const { mutate, isPending } = useGenerateUI();
   const { data: user } = useCurrent();
+  const { setValues } = useComponentStore();
 
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
@@ -86,20 +88,17 @@ export const CreateComponentForm = ({
     }
   };
 
-  let title = form.getValues("name")
   useEffect(() => {
-   const subscription = form.watch((value, { name }) => {
-    if (name === 'name') {
-      title =value.name || 'untitled'
-    }
-  });
-  
-  return () => subscription.unsubscribe();
-  },[form]);
+    const subscription = form.watch((values) => {
+      setValues(values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, setValues]);
 
   return (
     <div className="flex flex-col gap-5 p-4 w-full h-full">
-      <h1 className="text-2xl font-semibold">{title}</h1>
+      <h1 className="text-2xl font-semibold">{form.getValues("name")}</h1>
       <Separator />
       <Form {...form}>
         <form

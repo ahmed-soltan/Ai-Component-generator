@@ -37,6 +37,8 @@ export const useUpdateComponent = () => {
         code: code,
       };
 
+      console.log("requestBody", requestBody);
+
       const response = await client.api.component["update-component"][
         ":componentId"
       ]["$patch"]({

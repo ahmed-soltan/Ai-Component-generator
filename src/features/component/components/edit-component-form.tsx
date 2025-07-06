@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { useUpdateUI } from "../api/use-update-ui";
 import { useCurrent } from "@/features/auth/api/use-current";
 import { PremiumText } from "@/components/premium-text";
+import { useCurrentComponent } from "../store/store";
 
 interface EditComponentFormProps {
   initialValues?: any;
@@ -56,6 +57,7 @@ export const EditComponentForm = ({
   const [boxShadow, setBoxShadow] = useState(initialValues.shadow);
   const { mutate, isPending } = useUpdateUI();
   const { data: user } = useCurrent();
+  const { setValues, values } = useCurrentComponent();
 
   const form = useForm<z.infer<typeof createComponentSchema>>({
     resolver: zodResolver(createComponentSchema),
@@ -72,22 +74,24 @@ export const EditComponentForm = ({
   });
 
   useEffect(() => {
-    if (initialValues) {
-      form.setValue("name", initialValues.name);
-      form.setValue("theme", initialValues.theme);
-      form.setValue("radius", initialValues.radius);
-      form.setValue("shadow", initialValues.shadow);
-      form.setValue("prompt", initialValues.prompt);
-      form.setValue("layout", initialValues.layout);
-      form.setValue("jsFramework", initialValues.jsFramework);
-      form.setValue("cssFramework", initialValues.cssFramework);
-    } else {
-      form.reset();
-    }
-  }, [initialValues, form]);
+    const subscription = form.watch((values) => {
+      setValues(values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, setValues]);
 
   const onSubmit = (values: z.infer<typeof createComponentSchema>) => {
-    mutate({ json: values });
+    mutate({
+      name: values.name,
+      theme: values.theme,
+      layout: values.layout,
+      jsFramework: values.jsFramework,
+      cssFramework: values.cssFramework,
+      radius: values.radius,
+      shadow: values.shadow,
+      prompt: values.prompt,
+    });
   };
 
   const handleSelect = (
@@ -105,7 +109,7 @@ export const EditComponentForm = ({
 
   return (
     <div className="flex flex-col gap-5 p-4 w-full h-full">
-      <h1 className="text-2xl font-semibold">{form.getValues("name")}</h1>
+      <h1 className="text-2xl font-semibold">{values.name}</h1>
       <Separator />
       <Form {...form}>
         <form
@@ -143,7 +147,7 @@ export const EditComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    defaultValue={initialValues.jsFramework}
+                    defaultValue={values.jsFramework}
                     disabled={user?.profile.plan === "free"}
                   >
                     <FormControl>
@@ -184,7 +188,7 @@ export const EditComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    defaultValue={initialValues.cssFramework}
+                    defaultValue={values.cssFramework}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -221,7 +225,7 @@ export const EditComponentForm = ({
                   <Select
                     onValueChange={field.onChange}
                     value={field.value}
-                    defaultValue={initialValues.layout}
+                    defaultValue={values.layout}
                   >
                     <FormControl>
                       <SelectTrigger
@@ -270,7 +274,7 @@ export const EditComponentForm = ({
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
-                        defaultValue={initialValues.theme}
+                        defaultValue={values.theme}
                       >
                         <FormControl>
                           <div className="w-full space-y-3">
