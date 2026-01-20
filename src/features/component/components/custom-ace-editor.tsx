@@ -7,11 +7,12 @@ import "ace-builds/src-noconflict/theme-textmate";
 import "ace-builds/src-noconflict/theme-monokai";
 
 interface CustomAceEditorProps{
-  code:string;
+  code: string;
   setCode: (code: string) => void;
+  isGenerating?: boolean;
 }
 
-export const CustomAceEditor = ({code , setCode}:CustomAceEditorProps) => {
+export const CustomAceEditor = ({ code, setCode, isGenerating }: CustomAceEditorProps) => {
   const { updateCode } = useActiveCode();
 
   return (
@@ -19,6 +20,8 @@ export const CustomAceEditor = ({code , setCode}:CustomAceEditorProps) => {
       mode="javascript"
       value={code}
       onChange={(e) => {
+        // Don't allow editing while generating
+        if (isGenerating) return;
         updateCode(e);
         setCode(e);
       }}
@@ -26,6 +29,7 @@ export const CustomAceEditor = ({code , setCode}:CustomAceEditorProps) => {
       style={{ height: "82vh" }}
       width="100%"
       theme="monokai"
+      readOnly={isGenerating}
     />
   );
 };

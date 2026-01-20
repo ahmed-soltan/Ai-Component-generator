@@ -46,11 +46,8 @@ export const ComponentPreviewEdit = () => {
 
   return (
     <div className="w-full h-full flex flex-col items-start gap-2">
-      <div className="flex items-center justify-between gap-4 w-full flex-wrap">
-        <span className="text-gray-400 text-sm">
-          (if the preview does not appear just reload the page)
-        </span>
-        <div className="flex items-center justify-center gap-4">
+      <div className="flex items-center justify-end gap-4 w-full flex-wrap">
+        <div className="flex items-center justify-end gap-4 w-full">
           <Button variant={"outline"} onClick={handleCopy}>
             {isLoading ? (
               <Loader2 className="size-5 animate-spin" />

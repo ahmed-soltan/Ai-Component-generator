@@ -51,6 +51,7 @@ const model = new ChatGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY!,
   model: "gemini-2.5-flash",
   temperature: 0.7,
+  streaming: true,
 });
 
 const app = new Hono()
@@ -183,56 +184,100 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       export default MyComponent;  
       `;
 
-      try {
-        const startTime = Date.now();
+      const startTime = Date.now();
+      const encoder = new TextEncoder();
 
-        const response = await model.invoke([
-          new HumanMessage(detailedPrompt),
-        ]);
+      // Create a ReadableStream with immediate heartbeat to prevent Vercel timeout
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Send initial heartbeat immediately to prevent Vercel 10s timeout
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: "start" }) + "\n")
+            );
 
-        const endTime = Date.now();
-        const responseTime = endTime - startTime;
+            const streamResponse = await model.stream([
+              new HumanMessage(detailedPrompt),
+            ]);
 
-        // Extract text content from the response
-        const rawContent = typeof response.content === "string" 
-          ? response.content 
-          : Array.isArray(response.content) 
-            ? response.content.map(c => typeof c === "string" ? c : "").join("")
-            : "";
+            for await (const chunk of streamResponse) {
+              const content =
+                typeof chunk.content === "string"
+                  ? chunk.content
+                  : Array.isArray(chunk.content)
+                    ? chunk.content
+                        .map((c) => (typeof c === "string" ? c : ""))
+                        .join("")
+                    : "";
 
-        if (!rawContent || rawContent.length === 0) {
-          await databases.createDocument(
-            DATABASES_ID,
-            PERFORMANCE_ID,
-            ID.unique(),
-            {
-              userId: user.$id,
-              responseTime,
-              status: "failed",
+              if (content) {
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({ type: "chunk", content }) + "\n"
+                  )
+                );
+              }
             }
-          );
-          return c.json({ error: "Failed to generate component" }, 500);
-        }
 
-        // Clean up the AI output to remove markdown code blocks
-        const cleanedComponent = cleanupAIOutput(rawContent);
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
 
-        await databases.createDocument(
-          DATABASES_ID,
-          PERFORMANCE_ID,
-          ID.unique(),
-          {
-            userId: user.$id,
-            responseTime,
-            status: "success",
+            // Log success after streaming completes
+            await databases.createDocument(
+              DATABASES_ID,
+              PERFORMANCE_ID,
+              ID.unique(),
+              {
+                userId: user.$id,
+                responseTime,
+                status: "success",
+              }
+            );
+
+            // Send completion message
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: "end" }) + "\n")
+            );
+            controller.close();
+          } catch (error) {
+            console.error("Gemini API Streaming Error:", error);
+
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+
+            // Log failure
+            await databases.createDocument(
+              DATABASES_ID,
+              PERFORMANCE_ID,
+              ID.unique(),
+              {
+                userId: user.$id,
+                responseTime,
+                status: "failed",
+              }
+            );
+
+            // Send error message
+            controller.enqueue(
+              encoder.encode(
+                JSON.stringify({
+                  type: "error",
+                  error: "Failed to generate UI component",
+                }) + "\n"
+              )
+            );
+            controller.close();
           }
-        );
+        },
+      });
 
-        return c.json({ component: cleanedComponent });
-      } catch (error) {
-        console.error("Gemini API Error:", error);
-        return c.json({ error: "Failed to generate UI component" }, 500);
-      }
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
     }
   )
   .post(

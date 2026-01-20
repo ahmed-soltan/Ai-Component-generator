@@ -41,7 +41,6 @@ export const useSaveComponent = () => {
 
       if (!response.ok) {
         const errorData: { error: string } | any = await response.json();
-        toast.error(errorData.error, { id: toastId });
         throw new Error(errorData.error || "Failed to save Component");
       }
 

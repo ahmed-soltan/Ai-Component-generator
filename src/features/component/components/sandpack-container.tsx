@@ -6,6 +6,8 @@ import {
   SandpackProvider,
 } from "@codesandbox/sandpack-react";
 
+import { useComponentStore } from "../store/store";
+
 interface SandpackContainerProps {
   code?: string;
   values: Record<string, any>;
@@ -32,6 +34,8 @@ export default function SandpackContainer({
 }: SandpackContainerProps) {
   const [isClient, setIsClient] = useState(false);
   const [mainFile, setMainFile] = useState<string>("/App.js");
+  
+  const { isGenerating, streamingCode } = useComponentStore();
 
   useEffect(() => {
     setIsClient(true);
@@ -54,6 +58,11 @@ const MyComponent = () => {
 export default MyComponent;
 `;
 
+  // Use stable code for preview (keeps old code during generation)
+  // Use streaming code for editor if generating, otherwise stable code
+  const previewCode = code || defaultCode.trim();
+  const editorCode = isGenerating && streamingCode ? streamingCode : (code || defaultCode);
+
   return (
     <>
       <SandpackProvider
@@ -61,7 +70,7 @@ export default MyComponent;
         template={values.jsFramework || "react"}
         files={{
           [mainFile]: {
-            code: code || defaultCode.trim(),
+            code: previewCode,
           },
         }}
         customSetup={{
@@ -94,7 +103,7 @@ export default MyComponent;
             ) : (
               <SandpackPreview style={{ height: "82vh" }} />
             )}
-            <CustomAceEditor code={code || defaultCode} setCode={setCode}/>
+            <CustomAceEditor code={editorCode} setCode={setCode} isGenerating={isGenerating} />
           </div>
         </SandpackLayout>
       </SandpackProvider>
