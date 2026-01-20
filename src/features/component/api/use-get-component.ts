@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
 import { useCurrentComponent } from "../store/store";
+import { Code } from "lucide-react";
+import { cleanupGeneratedCode } from "@/lib/utils";
 
 export const useGetComponent = ({ componentId }: { componentId: string }) => {
   const { setCode, setValues } = useCurrentComponent();
@@ -13,12 +15,14 @@ export const useGetComponent = ({ componentId }: { componentId: string }) => {
       });
 
       if (!response.ok) {
-        return null
+        return null;
       }
 
       const { data } = await response.json();
 
-      setCode(data.code);
+      const code = cleanupGeneratedCode(data.code);
+
+      setCode(code);
       setValues({
         id: data.$id,
         name: data?.name,

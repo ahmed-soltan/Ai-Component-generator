@@ -1,3 +1,6 @@
+// app/api/[[...route]]/route.ts
+export const runtime = "nodejs"; // ✅ safe for OpenNext
+
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
@@ -9,8 +12,6 @@ import performance from "@/features/performance/server/route";
 import subscription from "@/features/subscription/server/route";
 import generation from "@/features/generation-analytics/server/route";
 
-export const runtime = "edge";
-
 const app = new Hono()
   .basePath("/api")
   .route("/auth", auth)
@@ -19,7 +20,7 @@ const app = new Hono()
   .route("/component", component)
   .route("/generation", generation)
   .route("/performance", performance)
-  .route("/subscription", subscription)
+  .route("/subscription", subscription);
 
 export const GET = handle(app);
 export const POST = handle(app);

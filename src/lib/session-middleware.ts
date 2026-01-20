@@ -32,6 +32,9 @@ export const sessionMiddleware = createMiddleware<AdditionalContext>(
 
     const session = getCookie(c, AUTH_COOKIE);
 
+
+      Promise.resolve(()=>setTimeout(() => {}, 1000));
+
     if (!session) {
       return c.json({ error: "Unauthorized" }, 401);
     }

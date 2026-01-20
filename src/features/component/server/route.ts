@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
-import { Mistral } from "@mistralai/mistralai";
 import { zValidator } from "@hono/zod-validator";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "@langchain/core/messages";
 
 import {
   COMPONENTS_ID,
@@ -22,9 +23,35 @@ import {
 } from "../schema";
 import { ComponentType } from "../types";
 
-const apiKey = process.env.MISTRAL_API_KEY;
+/**
+ * Cleans up AI-generated code by removing markdown code blocks and extra formatting
+ */
+function cleanupAIOutput(rawCode: string): string {
+  if (!rawCode) return "";
 
-const client = new Mistral({ apiKey: apiKey });
+  let code = rawCode.trim();
+
+  // Remove opening code blocks with optional language identifier
+  // Handles: ```jsx, ```tsx, ```javascript, ```typescript, ```html, ```
+  code = code.replace(/^```(?:jsx|tsx|javascript|typescript|html|js|ts)?\s*\n?/i, "");
+
+  // Remove closing code blocks
+  code = code.replace(/\n?```\s*$/g, "");
+
+  // Remove any remaining triple backticks that might be in the middle
+  code = code.replace(/```/g, "");
+
+  // Normalize line endings
+  code = code.replace(/\r\n/g, "\n");
+
+  return code.trim();
+}
+
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: "gemini-2.5-flash",
+  temperature: 0.7,
+});
 
 const app = new Hono()
   .post(
@@ -159,20 +186,21 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       try {
         const startTime = Date.now();
 
-        const chatResponse = await client.chat.complete({
-          model: "mistral-large-latest",
-          messages: [{ role: "user", content: detailedPrompt }],
-        });
+        const response = await model.invoke([
+          new HumanMessage(detailedPrompt),
+        ]);
 
         const endTime = Date.now();
-
         const responseTime = endTime - startTime;
 
-        if (
-          !chatResponse?.choices ||
-          !chatResponse?.choices[0]?.message.content ||
-          chatResponse?.choices[0]?.message.content.length === 0
-        ) {
+        // Extract text content from the response
+        const rawContent = typeof response.content === "string" 
+          ? response.content 
+          : Array.isArray(response.content) 
+            ? response.content.map(c => typeof c === "string" ? c : "").join("")
+            : "";
+
+        if (!rawContent || rawContent.length === 0) {
           await databases.createDocument(
             DATABASES_ID,
             PERFORMANCE_ID,
@@ -186,6 +214,9 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           return c.json({ error: "Failed to generate component" }, 500);
         }
 
+        // Clean up the AI output to remove markdown code blocks
+        const cleanedComponent = cleanupAIOutput(rawContent);
+
         await databases.createDocument(
           DATABASES_ID,
           PERFORMANCE_ID,
@@ -197,7 +228,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           }
         );
 
-        return c.json({ component: chatResponse.choices[0].message.content });
+        return c.json({ component: cleanedComponent });
       } catch (error) {
         console.error("Gemini API Error:", error);
         return c.json({ error: "Failed to generate UI component" }, 500);
@@ -255,6 +286,8 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         code,
       } = c.req.valid("json");
 
+      const cleanedCode = cleanupAIOutput(code);
+
       const savedComponent = await databases.createDocument(
         DATABASES_ID,
         COMPONENTS_ID,
@@ -269,7 +302,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           aiPrompt: prompt,
           radius,
           shadow,
-          code,
+          code: cleanedCode,
         }
       );
 
@@ -320,6 +353,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       }
 
       query.push(Query.limit(parseInt(limit!)));
+      
       if (cursor) {
         query.push(Query.cursorAfter(cursor));
       }
@@ -382,7 +416,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         code,
       } = c.req.valid("json");
 
-      console.log(name)
+      const cleanedCode = cleanupAIOutput(code);
 
       const savedComponent = await databases.updateDocument(
         DATABASES_ID,
@@ -397,7 +431,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           aiPrompt: prompt,
           radius,
           shadow,
-          code,
+          code: cleanedCode,
         }
       );
 
