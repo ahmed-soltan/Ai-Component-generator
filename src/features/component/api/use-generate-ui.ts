@@ -32,6 +32,7 @@ function cleanupAIOutput(rawCode: string): string {
  */
 type StreamMessage =
   | { type: "start" }
+  | { type: "ping" }
   | { type: "chunk"; content: string }
   | { type: "end" }
   | { type: "error"; error: string };
@@ -112,6 +113,9 @@ export const useGenerateUI = () => {
               switch (message.type) {
                 case "start":
                   // Heartbeat received, stream is starting
+                  break;
+                case "ping":
+                  // Keep-alive ping, ignore
                   break;
                 case "chunk":
                   fullContent += message.content;

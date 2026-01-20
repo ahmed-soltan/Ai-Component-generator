@@ -2,8 +2,6 @@ import { z } from "zod";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
-import { HumanMessage } from "@langchain/core/messages";
 
 import {
   COMPONENTS_ID,
@@ -50,12 +48,25 @@ function cleanupAIOutput(rawCode: string): string {
   return code.trim();
 }
 
-const model = new ChatGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY!,
-  model: "gemini-2.5-flash",
-  temperature: 0.7,
-  streaming: true,
-});
+/**
+ * Extracts text content from Gemini streaming response chunks
+ */
+function extractTextFromGeminiChunk(chunk: any): string {
+  try {
+    if (chunk?.candidates?.[0]?.content?.parts) {
+      return chunk.candidates[0].content.parts
+        .map((part: any) => part.text || "")
+        .join("");
+    }
+  } catch {
+    // Ignore parsing errors
+  }
+  return "";
+}
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
+const GEMINI_MODEL = "gemini-2.5-flash";
+const GEMINI_STREAMING_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
 
 const app = new Hono()
   .post(
@@ -149,22 +160,6 @@ const app = new Hono()
 
       when you are applying a hex color using this syntax bg-[#FFFFFF] or text-[#FFFFFF] with the props hex color 
 
-      don't use props make everything internal only add props if the user asked for this
-
-      Ensure a modern, visually appealing design with the following principles:
-
-Color Balance: Maintain a harmonious palette with primary, secondary, and accent colors that complement each other. Avoid high saturation or clashing colors.
-Spacing & Padding: Keep consistent padding and margins to avoid a cluttered appearance.
-Typography & Contrast: Ensure text is readable, with high contrast against the background and appropriate font sizes.
-      
-      ### Formatting Rules:
-      ✅ **DO NOT** include \\\` \`\`\`jsx \\\` or \\\` \`\`\` \\\`.  
-      ✅ Return **ONLY** the raw JSX/TSX component code.  
-      ✅ Ensure the code is **clean, readable, and performance-optimized**.  
-      ✅ **No props** – make everything **inline**.  
-      ✅ Ensure **responsiveness, accessibility, and reusability**.  
-      ✅ Avoid **extra comments or unnecessary syntax**.  
-
       don't use external libraries except react-icons and bootstrap components
       and don't use this css links like this bootstrap/dist/css/bootstrap.min.css
 
@@ -176,63 +171,121 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
   **Current Component Code:**
   ${currentCode}
 
-      ❌ **WRONG** ❌  
-      \\\` \`\`\`jsx  \`\`\`html  \`\`\`typescript \`\`\`javascript \`\`\`
-      const MyComponent = () => { ... };  
-      export default MyComponent;  
-      \\\` \`\`\`  
-      
-      ✅ **CORRECT** ✅  
-      const MyComponent = () => { ... };  
-      export default MyComponent;  
+
+  IMPORTANT:
+- You MUST finish the component
+- You MUST close all JSX tags
+- You MUST end with: export default <ComponentName>;
+- DO NOT stop early
+
       `;
 
       const startTime = Date.now();
       const encoder = new TextEncoder();
-      let finished = false;
 
       // Create a ReadableStream with immediate heartbeat to prevent Vercel timeout
       const stream = new ReadableStream({
         async start(controller) {
+          let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
           try {
             // Send initial heartbeat immediately to prevent Vercel 10s timeout
             controller.enqueue(
               encoder.encode(JSON.stringify({ type: "start" }) + "\n"),
             );
 
-            const heartbeat = setInterval(() => {
-              if (!finished) {
+            // Keep-alive heartbeat every 5 seconds
+            heartbeatInterval = setInterval(() => {
+              try {
                 controller.enqueue(
                   encoder.encode(JSON.stringify({ type: "ping" }) + "\n"),
                 );
+              } catch {
+                // Controller might be closed
               }
-            }, 1000);
+            }, 5000);
 
-            const streamResponse = await model.stream([
-              new HumanMessage(detailedPrompt),
-            ]);
+            // Call Gemini REST API directly (Edge-compatible)
+            const geminiResponse = await fetch(GEMINI_STREAMING_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [{ text: detailedPrompt }],
+                  },
+                ],
+                generationConfig: {
+                  temperature: 0.7,
+                  maxOutputTokens: 8192,
+                },
+              }),
+            });
 
-            // 3️⃣ Stop heartbeat when AI starts responding
-            finished = true;
-            clearInterval(heartbeat);
+            if (!geminiResponse.ok) {
+              const errorText = await geminiResponse.text();
+              console.error("Gemini API Error:", errorText);
+              throw new Error(`Gemini API error: ${geminiResponse.status}`);
+            }
 
-            for await (const chunk of streamResponse) {
-              const content =
-                typeof chunk.content === "string"
-                  ? chunk.content
-                  : Array.isArray(chunk.content)
-                    ? chunk.content
-                        .map((c) => (typeof c === "string" ? c : ""))
-                        .join("")
-                    : "";
+            if (!geminiResponse.body) {
+              throw new Error("No response body from Gemini");
+            }
 
-              if (content) {
-                controller.enqueue(
-                  encoder.encode(
-                    JSON.stringify({ type: "chunk", content }) + "\n",
-                  ),
-                );
+            // Process the SSE stream from Gemini
+            const reader = geminiResponse.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+              const { done, value } = await reader.read();
+
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+
+              // Process SSE events (format: "data: {...}\n\n")
+              const lines = buffer.split("\n");
+              buffer = "";
+
+              for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+
+                // If this line doesn't end with a complete event, keep it in buffer
+                if (i === lines.length - 1 && line && !line.startsWith("data: ")) {
+                  buffer = line;
+                  continue;
+                }
+
+                if (line.startsWith("data: ")) {
+                  const jsonStr = line.slice(6).trim();
+                  
+                  if (!jsonStr || jsonStr === "[DONE]") continue;
+
+                  try {
+                    const parsed = JSON.parse(jsonStr);
+                    const text = extractTextFromGeminiChunk(parsed);
+
+                    if (text) {
+                      controller.enqueue(
+                        encoder.encode(
+                          JSON.stringify({ type: "chunk", content: text }) + "\n",
+                        ),
+                      );
+                    }
+                  } catch (parseError) {
+                    // Skip malformed JSON chunks
+                    console.warn("Failed to parse Gemini chunk:", jsonStr);
+                  }
+                }
               }
+            }
+
+            // Clear heartbeat
+            if (heartbeatInterval) {
+              clearInterval(heartbeatInterval);
             }
 
             const endTime = Date.now();
@@ -258,20 +311,29 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           } catch (error) {
             console.error("Gemini API Streaming Error:", error);
 
+            // Clear heartbeat on error
+            if (heartbeatInterval) {
+              clearInterval(heartbeatInterval);
+            }
+
             const endTime = Date.now();
             const responseTime = endTime - startTime;
 
             // Log failure
-            await databases.createDocument(
-              DATABASES_ID,
-              PERFORMANCE_ID,
-              ID.unique(),
-              {
-                userId: user.$id,
-                responseTime,
-                status: "failed",
-              },
-            );
+            try {
+              await databases.createDocument(
+                DATABASES_ID,
+                PERFORMANCE_ID,
+                ID.unique(),
+                {
+                  userId: user.$id,
+                  responseTime,
+                  status: "failed",
+                },
+              );
+            } catch {
+              // Ignore logging errors
+            }
 
             // Send error message
             controller.enqueue(
