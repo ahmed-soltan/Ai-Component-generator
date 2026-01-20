@@ -2,6 +2,8 @@ import { z } from "zod";
 import { Hono } from "hono";
 import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { HumanMessage } from "@langchain/core/messages";
 
 import {
   COMPONENTS_ID,
@@ -48,29 +50,14 @@ function cleanupAIOutput(rawCode: string): string {
   return code.trim();
 }
 
-/**
- * Extracts text content from Gemini streaming response chunks
- */
-function extractTextFromGeminiChunk(chunk: any): string {
-  try {
-    if (chunk?.candidates?.[0]?.content?.parts) {
-      return chunk.candidates[0].content.parts
-        .map((part: any) => part.text || "")
-        .join("");
-    }
-  } catch {
-    // Ignore parsing errors
-  }
-  return "";
-}
+const model = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: "gemini-2.5-flash",
+  temperature: 0.7,
+  streaming: true,
+});
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const GEMINI_MODEL = "gemini-2.5-flash";
-const GEMINI_STREAMING_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
-
-export const runtime = "edge";
-
-export const app = new Hono()
+const app = new Hono()
   .post(
     "/generate-ui",
     sessionMiddleware,
@@ -91,150 +78,209 @@ export const app = new Hono()
         previousPrompt,
       } = c.req.valid("json");
 
-      if (!user) return c.json({ error: "Unauthorized" }, 401);
-      if (!prompt) return c.json({ error: "Prompt is required" }, 400);
+      if (!user) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      if (!prompt) {
+        return c.json({ error: "Prompt is required" }, 400);
+      }
 
       const userId = user.$id;
 
-      // --- check plan limits ---
-      const profile = await databases.getDocument(DATABASES_ID, PROFILES_ID, userId);
+      const profile = await databases.getDocument(
+        DATABASES_ID,
+        PROFILES_ID,
+        userId,
+      );
+
       const isFreePlan = profile.plan === "free";
       const isProPlan = profile.plan === "pro";
 
-      const freeLimit = 500;
-      const proLimit = 1000;
+      const freePlanRequestsLimit = 500;
+      const proPlanRequestsLimit = 1000;
 
-      const requests = await databases.listDocuments(DATABASES_ID, PERFORMANCE_ID, [
-        Query.equal("userId", userId),
-      ]);
+      const isRestrictedFramework = jsFramework !== "react";
+      const isRestrictedTheme = theme !== "earthy";
 
-      if (isFreePlan && requests.total >= freeLimit)
-        return c.json({ error: "Free plan limit reached" }, 403);
-      if (isProPlan && requests.total >= proLimit)
-        return c.json({ error: "Pro plan limit reached" }, 403);
+      if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
+        return c.json(
+          { error: "Your plan does not support this feature" },
+          403,
+        );
+      }
 
-      // --- construct prompt ---
+      const requests = await databases.listDocuments(
+        DATABASES_ID,
+        PERFORMANCE_ID,
+        [Query.equal("userId", userId)],
+      );
+
+      if (requests.total >= freePlanRequestsLimit && isFreePlan) {
+        return c.json(
+          { error: "You have reached your free plan requests limit" },
+          403,
+        );
+      }
+
+      if (requests.total >= proPlanRequestsLimit && isProPlan) {
+        return c.json(
+          { error: "You have reached your pro plan requests limit" },
+          403,
+        );
+      }
+
       const detailedPrompt = `
-Generate a ${jsFramework} UI component based on the following:
+      Generate a ${jsFramework} UI component based on the following specifications:
+      - **Component Name:** ${name}
+      - **Framework:** ${jsFramework} (Use best practices)
+      - **CSS Framework:** ${cssFramework} (Apply relevant classes)
+      - **Layout:** ${layout} (Ensure proper structure)
+      - **Theme:** ${theme} 
+        - Primary: ${themes[theme]?.primary} 
+        - Secondary: ${themes[theme]?.secondary}
+        - Accent: ${themes[theme]?.accent} 
+        - Background: ${themes[theme]?.background}
+      - **Border Radius:** ${radius}
+      - **Box Shadow:** ${shadow}
+      - **Description:** ${prompt}
+      - **previous prompt:** ${previousPrompt}
+      - **current code:** ${currentCode}
 
-Component Name: ${name}
-Framework: ${jsFramework}
-CSS Framework: ${cssFramework}
-Layout: ${layout}
-Theme: ${theme} - Primary: ${themes[theme]?.primary} Secondary: ${themes[theme]?.secondary} Accent: ${themes[theme]?.accent} Background: ${themes[theme]?.background}
-Border Radius: ${radius}
-Box Shadow: ${shadow}
-Description: ${prompt}
-Previous Prompt: ${previousPrompt}
-Current Code: ${currentCode}
+      when you are applying a hex color using this syntax bg-[#FFFFFF] or text-[#FFFFFF] with the props hex color 
 
-Do NOT use external libraries except react-icons and bootstrap components.
-Finish the component completely, close all JSX tags, and end with:
-export default ${name};
-DO NOT stop early.
-`;
+      don't use props make everything internal only add props if the user asked for this
 
-      const encoder = new TextEncoder();
+      Ensure a modern, visually appealing design with the following principles:
+
+Color Balance: Maintain a harmonious palette with primary, secondary, and accent colors that complement each other. Avoid high saturation or clashing colors.
+Spacing & Padding: Keep consistent padding and margins to avoid a cluttered appearance.
+Typography & Contrast: Ensure text is readable, with high contrast against the background and appropriate font sizes.
+      
+      ### Formatting Rules:
+      ✅ **DO NOT** include \\\` \`\`\`jsx \\\` or \\\` \`\`\` \\\`.  
+      ✅ Return **ONLY** the raw JSX/TSX component code.  
+      ✅ Ensure the code is **clean, readable, and performance-optimized**.  
+      ✅ **No props** – make everything **inline**.  
+      ✅ Ensure **responsiveness, accessibility, and reusability**.  
+      ✅ Avoid **extra comments or unnecessary syntax**.  
+
+      don't use external libraries except react-icons and bootstrap components
+      and don't use this css links like this bootstrap/dist/css/bootstrap.min.css
+
+      if there are previous prompt or current code   Modify the following component based on the new instructions:
+
+  **Previous Prompt:**
+  ${previousPrompt}
+
+  **Current Component Code:**
+  ${currentCode}
+
+      ❌ **WRONG** ❌  
+      \\\` \`\`\`jsx  \`\`\`html  \`\`\`typescript \`\`\`javascript \`\`\`
+      const MyComponent = () => { ... };  
+      export default MyComponent;  
+      \\\` \`\`\`  
+      
+      ✅ **CORRECT** ✅  
+      const MyComponent = () => { ... };  
+      export default MyComponent;  
+      `;
+
       const startTime = Date.now();
+      const encoder = new TextEncoder();
+      let finished = false;
 
+      // Create a ReadableStream with immediate heartbeat to prevent Vercel timeout
       const stream = new ReadableStream({
         async start(controller) {
-          let heartbeat: ReturnType<typeof setInterval> | null = null;
-
           try {
-            // 1️⃣ send start
-            controller.enqueue(encoder.encode(JSON.stringify({ type: "start" }) + "\n"));
-
-            // 2️⃣ heartbeat every 5s
-            heartbeat = setInterval(() => {
-              try {
-                controller.enqueue(encoder.encode(JSON.stringify({ type: "ping" }) + "\n"));
-              } catch {}
-            }, 5000);
-
-            // 3️⃣ call Gemini streaming endpoint
-            const geminiResponse = await fetch(
-              `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${GEMINI_API_KEY}`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: detailedPrompt }] }],
-                  generationConfig: { temperature: 0.7, maxOutputTokens: 8192 },
-                }),
-              }
+            // Send initial heartbeat immediately to prevent Vercel 10s timeout
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: "start" }) + "\n"),
             );
 
-            if (!geminiResponse.ok) {
-              const errText = await geminiResponse.text();
-              throw new Error(`Gemini API Error ${geminiResponse.status}: ${errText}`);
-            }
+            const heartbeat = setInterval(() => {
+              if (!finished) {
+                controller.enqueue(
+                  encoder.encode(JSON.stringify({ type: "ping" }) + "\n"),
+                );
+              }
+            }, 1000);
 
-            if (!geminiResponse.body) throw new Error("No response body from Gemini");
+            const streamResponse = await model.stream([
+              new HumanMessage(detailedPrompt),
+            ]);
 
-            // 4️⃣ SSE parsing
-            const reader = geminiResponse.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
+            // 3️⃣ Stop heartbeat when AI starts responding
+            finished = true;
+            clearInterval(heartbeat);
 
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
+            for await (const chunk of streamResponse) {
+              const content =
+                typeof chunk.content === "string"
+                  ? chunk.content
+                  : Array.isArray(chunk.content)
+                    ? chunk.content
+                        .map((c) => (typeof c === "string" ? c : ""))
+                        .join("")
+                    : "";
 
-              buffer += decoder.decode(value, { stream: true });
-
-              let newlineIndex;
-              while ((newlineIndex = buffer.indexOf("\n")) >= 0) {
-                const line = buffer.slice(0, newlineIndex).trim();
-                buffer = buffer.slice(newlineIndex + 1);
-
-                if (!line.startsWith("data:")) continue;
-                const jsonStr = line.slice(5).trim();
-                if (!jsonStr || jsonStr === "[DONE]") continue;
-
-                try {
-                  const parsed = JSON.parse(jsonStr);
-                  const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
-                  if (text) {
-                    controller.enqueue(
-                      encoder.encode(JSON.stringify({ type: "chunk", content: text }) + "\n")
-                    );
-                  }
-                } catch {
-                  // ignore malformed chunk
-                }
+              if (content) {
+                controller.enqueue(
+                  encoder.encode(
+                    JSON.stringify({ type: "chunk", content }) + "\n",
+                  ),
+                );
               }
             }
 
-            // 5️⃣ finish
-            if (heartbeat) clearInterval(heartbeat);
-            const responseTime = Date.now() - startTime;
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
 
-            await databases.createDocument(DATABASES_ID, PERFORMANCE_ID, ID.unique(), {
-              userId,
-              responseTime,
-              status: "success",
-            });
+            // Log success after streaming completes
+            await databases.createDocument(
+              DATABASES_ID,
+              PERFORMANCE_ID,
+              ID.unique(),
+              {
+                userId: user.$id,
+                responseTime,
+                status: "success",
+              },
+            );
 
-            controller.enqueue(encoder.encode(JSON.stringify({ type: "end" }) + "\n"));
+            // Send completion message
+            controller.enqueue(
+              encoder.encode(JSON.stringify({ type: "end" }) + "\n"),
+            );
             controller.close();
-          } catch (err) {
-            console.error("Gemini streaming error:", err);
-            if (heartbeat) clearInterval(heartbeat);
+          } catch (error) {
+            console.error("Gemini API Streaming Error:", error);
 
-            const responseTime = Date.now() - startTime;
-            try {
-              await databases.createDocument(DATABASES_ID, PERFORMANCE_ID, ID.unique(), {
-                userId,
+            const endTime = Date.now();
+            const responseTime = endTime - startTime;
+
+            // Log failure
+            await databases.createDocument(
+              DATABASES_ID,
+              PERFORMANCE_ID,
+              ID.unique(),
+              {
+                userId: user.$id,
                 responseTime,
                 status: "failed",
-              });
-            } catch {}
+              },
+            );
 
+            // Send error message
             controller.enqueue(
               encoder.encode(
-                JSON.stringify({ type: "error", error: "Failed to generate UI component" }) + "\n"
-              )
+                JSON.stringify({
+                  type: "error",
+                  error: "Failed to generate UI component",
+                }) + "\n",
+              ),
             );
             controller.close();
           }
@@ -248,9 +294,8 @@ DO NOT stop early.
           "X-Content-Type-Options": "nosniff",
         },
       });
-    }
+    },
   )
-
   .post(
     "/save-component",
     sessionMiddleware,
