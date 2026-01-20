@@ -33,7 +33,10 @@ function cleanupAIOutput(rawCode: string): string {
 
   // Remove opening code blocks with optional language identifier
   // Handles: ```jsx, ```tsx, ```javascript, ```typescript, ```html, ```
-  code = code.replace(/^```(?:jsx|tsx|javascript|typescript|html|js|ts)?\s*\n?/i, "");
+  code = code.replace(
+    /^```(?:jsx|tsx|javascript|typescript|html|js|ts)?\s*\n?/i,
+    "",
+  );
 
   // Remove closing code blocks
   code = code.replace(/\n?```\s*$/g, "");
@@ -88,7 +91,7 @@ const app = new Hono()
       const profile = await databases.getDocument(
         DATABASES_ID,
         PROFILES_ID,
-        userId
+        userId,
       );
 
       const isFreePlan = profile.plan === "free";
@@ -103,27 +106,27 @@ const app = new Hono()
       if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
         return c.json(
           { error: "Your plan does not support this feature" },
-          403
+          403,
         );
       }
 
       const requests = await databases.listDocuments(
         DATABASES_ID,
         PERFORMANCE_ID,
-        [Query.equal("userId", userId)]
+        [Query.equal("userId", userId)],
       );
 
       if (requests.total >= freePlanRequestsLimit && isFreePlan) {
         return c.json(
           { error: "You have reached your free plan requests limit" },
-          403
+          403,
         );
       }
 
       if (requests.total >= proPlanRequestsLimit && isProPlan) {
         return c.json(
           { error: "You have reached your pro plan requests limit" },
-          403
+          403,
         );
       }
 
@@ -186,6 +189,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
 
       const startTime = Date.now();
       const encoder = new TextEncoder();
+      let finished = false;
 
       // Create a ReadableStream with immediate heartbeat to prevent Vercel timeout
       const stream = new ReadableStream({
@@ -193,12 +197,24 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           try {
             // Send initial heartbeat immediately to prevent Vercel 10s timeout
             controller.enqueue(
-              encoder.encode(JSON.stringify({ type: "start" }) + "\n")
+              encoder.encode(JSON.stringify({ type: "start" }) + "\n"),
             );
+
+            const heartbeat = setInterval(() => {
+              if (!finished) {
+                controller.enqueue(
+                  encoder.encode(JSON.stringify({ type: "ping" }) + "\n"),
+                );
+              }
+            }, 1000);
 
             const streamResponse = await model.stream([
               new HumanMessage(detailedPrompt),
             ]);
+
+            // 3️⃣ Stop heartbeat when AI starts responding
+            finished = true;
+            clearInterval(heartbeat);
 
             for await (const chunk of streamResponse) {
               const content =
@@ -213,8 +229,8 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
               if (content) {
                 controller.enqueue(
                   encoder.encode(
-                    JSON.stringify({ type: "chunk", content }) + "\n"
-                  )
+                    JSON.stringify({ type: "chunk", content }) + "\n",
+                  ),
                 );
               }
             }
@@ -231,12 +247,12 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
                 userId: user.$id,
                 responseTime,
                 status: "success",
-              }
+              },
             );
 
             // Send completion message
             controller.enqueue(
-              encoder.encode(JSON.stringify({ type: "end" }) + "\n")
+              encoder.encode(JSON.stringify({ type: "end" }) + "\n"),
             );
             controller.close();
           } catch (error) {
@@ -254,7 +270,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
                 userId: user.$id,
                 responseTime,
                 status: "failed",
-              }
+              },
             );
 
             // Send error message
@@ -263,8 +279,8 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
                 JSON.stringify({
                   type: "error",
                   error: "Failed to generate UI component",
-                }) + "\n"
-              )
+                }) + "\n",
+              ),
             );
             controller.close();
           }
@@ -278,7 +294,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           "X-Content-Type-Options": "nosniff",
         },
       });
-    }
+    },
   )
   .post(
     "/save-component",
@@ -295,7 +311,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       const profile = await databases.getDocument(
         DATABASES_ID,
         PROFILES_ID,
-        user.$id
+        user.$id,
       );
 
       const isFreePlan = profile.plan === "free";
@@ -304,18 +320,18 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       const components = await databases.listDocuments(
         DATABASES_ID,
         COMPONENTS_ID,
-        [Query.equal("userId", user.$id)]
+        [Query.equal("userId", user.$id)],
       );
 
       if (isFreePlan && components.total >= 10) {
         return c.json(
           { error: "Your free plan allows for a maximum of 5 components" },
-          403
+          403,
         );
       } else if (!isProPlan && components.total >= 50) {
         return c.json(
           { error: "Your pro plan allows for a maximum of 10 components" },
-          403
+          403,
         );
       }
 
@@ -348,11 +364,11 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           radius,
           shadow,
           code: cleanedCode,
-        }
+        },
       );
 
       return c.json({ data: savedComponent });
-    }
+    },
   )
   .get(
     "/",
@@ -366,7 +382,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
         search: z.string().optional().nullish(),
         cursor: z.string().optional().nullish(),
         limit: z.string().nullish(),
-      })
+      }),
     ),
     async (c) => {
       const databases = c.get("databases");
@@ -398,7 +414,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       }
 
       query.push(Query.limit(parseInt(limit!)));
-      
+
       if (cursor) {
         query.push(Query.cursorAfter(cursor));
       }
@@ -406,7 +422,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
       const components = await databases.listDocuments(
         DATABASES_ID,
         COMPONENTS_ID,
-        [...query, Query.orderDesc("$createdAt")]
+        [...query, Query.orderDesc("$createdAt")],
       );
 
       return c.json({
@@ -417,7 +433,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
             : null,
         },
       });
-    }
+    },
   )
   .get("/:componentId", sessionMiddleware, async (c) => {
     const databases = c.get("databases");
@@ -431,7 +447,7 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
     const component = await databases.getDocument<ComponentType>(
       DATABASES_ID,
       COMPONENTS_ID,
-      componentId
+      componentId,
     );
 
     return c.json({ data: component });
@@ -477,11 +493,11 @@ Typography & Contrast: Ensure text is readable, with high contrast against the b
           radius,
           shadow,
           code: cleanedCode,
-        }
+        },
       );
 
       return c.json({ data: savedComponent });
-    }
+    },
   )
   .delete("/:componentId", sessionMiddleware, async (c) => {
     const databases = c.get("databases");
