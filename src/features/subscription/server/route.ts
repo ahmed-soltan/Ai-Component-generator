@@ -101,10 +101,7 @@ const app = new Hono()
                 userId: user.$id,
                 subscriptionId,
               },
-              variant_quantities: [],
             },
-            expires_at: "",
-            preview: false,
           },
           relationships: {
             store: {
@@ -128,11 +125,10 @@ const app = new Hono()
 
     const data = await response.json();
 
-    if (!data || !data.data) {
+    if (!data || !data.data || data.errors) {
+      console.error("LemonSqueezy checkout error:", JSON.stringify(data, null, 2));
       return c.json({ error: "Failed to create checkout session" }, 500);
     }
-
-    console.log(data);
 
     await databases.createDocument(
       DATABASES_ID,

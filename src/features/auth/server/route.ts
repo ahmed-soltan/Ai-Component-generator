@@ -21,8 +21,8 @@ const app = new Hono()
     setCookie(c, AUTH_COOKIE, session.secret, {
       path: "/",
       httpOnly: true,
-      sameSite: "strict",
-      secure: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
       maxAge: 60 * 60 * 24 * 30,
     });
 
@@ -40,8 +40,9 @@ const app = new Hono()
     setCookie(c, AUTH_COOKIE, session.secret, {
       path: "/",
       httpOnly: true,
-      sameSite: "strict",
-      secure: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     await databases.createDocument(DATABASES_ID, PROFILES_ID, user.$id, {

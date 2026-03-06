@@ -16,7 +16,6 @@ import { GenerationRadialChart } from "@/features/generation-analytics/component
 const DashboardPage = async () => {
   const user = await getCurrent();
 
-  Promise.resolve(()=>setTimeout(() => {}, 1000));
   if (!user) redirect("/auth/sign-in");
 
   return (
