@@ -101,7 +101,7 @@ const app = new Hono()
       const proPlanRequestsLimit = 1000;
 
       const isRestrictedFramework = jsFramework !== "react";
-      const isRestrictedTheme = theme !== "earthy";
+      const isRestrictedTheme = theme !== "dark";
 
       if (isFreePlan && (isRestrictedFramework || isRestrictedTheme)) {
         return c.json(
